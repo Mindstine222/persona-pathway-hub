@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +24,10 @@ const Assessment = () => {
     setResponses([]);
     setCurrentStep('questions');
   };
+
+  if (currentStep === 'questions') {
+    return <AssessmentQuestions onComplete={handleCompleteAssessment} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -85,10 +88,6 @@ const Assessment = () => {
               </CardContent>
             </Card>
           </div>
-        )}
-
-        {currentStep === 'questions' && (
-          <AssessmentQuestions onComplete={handleCompleteAssessment} />
         )}
 
         {currentStep === 'results' && (

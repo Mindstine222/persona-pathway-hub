@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -15,16 +15,33 @@ interface AssessmentQuestionsProps {
 const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<number[]>(new Array(93).fill(0));
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleAnswerSelect = (value: string) => {
     const newResponses = [...responses];
     newResponses[currentQuestion] = parseInt(value);
     setResponses(newResponses);
+
+    // Auto-advance to next question with animation
+    setIsTransitioning(true);
+    
+    setTimeout(() => {
+      if (currentQuestion < 92) {
+        setCurrentQuestion(currentQuestion + 1);
+      } else {
+        onComplete(newResponses);
+      }
+      setIsTransitioning(false);
+    }, 600);
   };
 
   const handleNext = () => {
     if (currentQuestion < 92) {
-      setCurrentQuestion(currentQuestion + 1);
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentQuestion(currentQuestion + 1);
+        setIsTransitioning(false);
+      }, 300);
     } else {
       onComplete(responses);
     }
@@ -32,7 +49,11 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentQuestion(currentQuestion - 1);
+        setIsTransitioning(false);
+      }, 300);
     }
   };
 
@@ -40,82 +61,116 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
   const isAnswered = responses[currentQuestion] !== 0;
 
   const answerOptions = [
-    { value: "1", label: "Strongly Disagree", color: "text-red-600" },
-    { value: "2", label: "Disagree", color: "text-orange-600" },
-    { value: "3", label: "Neutral", color: "text-slate-600" },
-    { value: "4", label: "Agree", color: "text-blue-600" },
-    { value: "5", label: "Strongly Agree", color: "text-green-600" }
+    { value: "1", label: "Disagree", color: "text-blue-500" },
+    { value: "2", label: "", color: "text-blue-400" },
+    { value: "3", label: "", color: "text-gray-400" },
+    { value: "4", label: "", color: "text-gray-400" },
+    { value: "5", label: "", color: "text-gray-400" },
+    { value: "6", label: "", color: "text-green-400" },
+    { value: "7", label: "Agree", color: "text-green-500" }
   ];
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <Card className="shadow-lg border-0 bg-white/90 backdrop-blur">
-        <CardContent className="p-8">
-          {/* Progress Header */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-sm font-medium text-slate-600">
-                Question {currentQuestion + 1} of 93
-              </span>
-              <span className="text-sm font-medium text-blue-600">
-                {Math.round(progress)}% Complete
-              </span>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-4xl w-full">
+        {/* Progress Header */}
+        <div className="text-center mb-8">
+          <div className="flex justify-between items-center mb-4 text-sm text-gray-500">
+            <span>Question {currentQuestion + 1}</span>
+            <span>{Math.round(progress)}% Complete</span>
+          </div>
+          <Progress value={progress} className="h-2 bg-gray-200" />
+        </div>
+
+        {/* Question Card */}
+        <Card className={`bg-white shadow-sm border-0 transition-all duration-500 ${
+          isTransitioning ? 'opacity-30 scale-95' : 'opacity-100 scale-100'
+        }`}>
+          <CardContent className="p-12 text-center">
+            {/* Question Text */}
+            <div className="mb-12">
+              <h2 className="text-2xl font-medium text-gray-800 leading-relaxed max-w-3xl mx-auto">
+                {mbtiQuestions[currentQuestion].question}
+              </h2>
             </div>
-            <Progress value={progress} className="h-2" />
-          </div>
 
-          {/* Question */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-slate-900 mb-8 leading-relaxed">
-              {mbtiQuestions[currentQuestion].question}
-            </h2>
+            {/* Answer Options - Horizontal circles */}
+            <div className="mb-8">
+              <RadioGroup
+                value={responses[currentQuestion].toString()}
+                onValueChange={handleAnswerSelect}
+                className="flex items-center justify-center gap-4"
+                disabled={isTransitioning}
+              >
+                <span className="text-blue-500 text-sm font-medium mr-4">Disagree</span>
+                {answerOptions.map((option, index) => (
+                  <div key={option.value} className="flex flex-col items-center">
+                    <RadioGroupItem 
+                      value={option.value} 
+                      id={`option${option.value}`}
+                      className={`w-12 h-12 rounded-full border-2 transition-all duration-200 ${
+                        responses[currentQuestion].toString() === option.value
+                          ? 'border-blue-500 bg-blue-500' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      } ${isTransitioning ? 'pointer-events-none' : ''}`}
+                    />
+                    <Label 
+                      htmlFor={`option${option.value}`} 
+                      className="sr-only"
+                    >
+                      {option.label || `Option ${option.value}`}
+                    </Label>
+                  </div>
+                ))}
+                <span className="text-green-500 text-sm font-medium ml-4">Agree</span>
+              </RadioGroup>
+            </div>
 
-            <RadioGroup
-              value={responses[currentQuestion].toString()}
-              onValueChange={handleAnswerSelect}
-              className="space-y-4"
-            >
-              {answerOptions.map((option) => (
-                <div key={option.value} className="flex items-center space-x-4 p-4 rounded-lg hover:bg-slate-50 transition-colors">
-                  <RadioGroupItem 
-                    value={option.value} 
-                    id={`option${option.value}`}
-                    className="w-5 h-5" 
-                  />
-                  <Label 
-                    htmlFor={`option${option.value}`} 
-                    className={`text-lg cursor-pointer flex-1 ${option.color}`}
-                  >
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
+            {/* Navigation - Only show if manual navigation is needed */}
+            {!isAnswered && (
+              <div className="flex justify-between items-center pt-6">
+                <Button
+                  onClick={handlePrevious}
+                  disabled={currentQuestion === 0}
+                  variant="ghost"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                
+                <Button
+                  onClick={handleNext}
+                  disabled={!isAnswered}
+                  variant="ghost"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  {currentQuestion === 92 ? 'Complete' : 'Skip'}
+                  {currentQuestion !== 92 && <ChevronRight className="h-4 w-4 ml-1" />}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Navigation */}
-          <div className="flex justify-between items-center pt-6 border-t border-slate-200">
-            <Button
-              onClick={handlePrevious}
-              disabled={currentQuestion === 0}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            
-            <Button
-              onClick={handleNext}
-              disabled={!isAnswered}
-              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-            >
-              {currentQuestion === 92 ? 'Complete Assessment' : 'Next'}
-              {currentQuestion !== 92 && <ChevronRight className="h-4 w-4" />}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Previous Questions Preview */}
+        <div className="mt-8 space-y-2 max-h-32 overflow-hidden">
+          {currentQuestion > 0 && (
+            <div className="opacity-30 text-center">
+              <p className="text-sm text-gray-500 truncate">
+                {mbtiQuestions[currentQuestion - 1].question}
+              </p>
+            </div>
+          )}
+          {currentQuestion > 1 && (
+            <div className="opacity-20 text-center">
+              <p className="text-xs text-gray-400 truncate">
+                {mbtiQuestions[currentQuestion - 2].question}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
