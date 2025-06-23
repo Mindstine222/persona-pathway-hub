@@ -27,63 +27,64 @@ const Assessment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-6 py-8">
-        <div className="mb-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
         </div>
 
         {currentStep === 'intro' && (
-          <Card className="max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-3xl text-center text-gray-900">
-                MBTI Personality Assessment
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="text-center space-y-4">
-                <p className="text-lg text-gray-600">
-                  Discover your personality type with our comprehensive Myers-Briggs Type Indicator assessment.
-                </p>
-                <div className="bg-blue-50 p-6 rounded-lg">
-                  <h3 className="font-semibold text-gray-900 mb-3">What you'll learn:</h3>
-                  <div className="grid md:grid-cols-2 gap-4 text-left">
-                    <div>
-                      <p className="font-medium text-gray-700">Energy Direction:</p>
-                      <p className="text-sm text-gray-600">Extraversion (E) vs Introversion (I)</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-700">Information Processing:</p>
-                      <p className="text-sm text-gray-600">Sensing (S) vs Intuition (N)</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-700">Decision Making:</p>
-                      <p className="text-sm text-gray-600">Thinking (T) vs Feeling (F)</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-700">Lifestyle Approach:</p>
-                      <p className="text-sm text-gray-600">Judging (J) vs Perceiving (P)</p>
-                    </div>
+          <div className="text-center space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
+                Discover Your
+                <span className="block text-blue-600">Personality Type</span>
+              </h1>
+              <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                Take our comprehensive Myers-Briggs Type Indicator assessment and unlock insights about your personality.
+              </p>
+            </div>
+
+            <Card className="max-w-2xl mx-auto shadow-lg border-0 bg-white/80 backdrop-blur">
+              <CardContent className="p-8">
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  <div className="text-left">
+                    <h3 className="font-semibold text-slate-900 mb-2">Energy Direction</h3>
+                    <p className="text-sm text-slate-600">Extraversion vs Introversion</p>
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-slate-900 mb-2">Information Processing</h3>
+                    <p className="text-sm text-slate-600">Sensing vs Intuition</p>
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-slate-900 mb-2">Decision Making</h3>
+                    <p className="text-sm text-slate-600">Thinking vs Feeling</p>
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-slate-900 mb-2">Lifestyle Approach</h3>
+                    <p className="text-sm text-slate-600">Judging vs Perceiving</p>
                   </div>
                 </div>
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    <strong>Instructions:</strong> Answer all 93 questions honestly based on your natural preferences. 
-                    There are no right or wrong answers. The assessment takes approximately 15-20 minutes.
+                
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-amber-800">
+                    <strong>Time to complete:</strong> 15-20 minutes • <strong>Questions:</strong> 93 total
                   </p>
                 </div>
+
                 <Button 
                   onClick={handleStartAssessment}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-medium rounded-lg transition-colors"
+                  size="lg"
                 >
                   Start Assessment
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {currentStep === 'questions' && (
