@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import AssessmentQuestions from "@/components/AssessmentQuestions";
 import AssessmentResults from "@/components/AssessmentResults";
+import AssessmentCompletion from "@/components/AssessmentCompletion";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -91,7 +92,7 @@ const Assessment = () => {
         )}
 
         {currentStep === 'results' && (
-          <AssessmentResults responses={responses} onRetakeTest={handleRetakeTest} />
+          <AssessmentCompletion responses={responses} onRetakeTest={handleRetakeTest} />
         )}
       </div>
     </div>
