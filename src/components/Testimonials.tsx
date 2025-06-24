@@ -56,7 +56,7 @@ const Testimonials = () => {
                       ))}
                     </div>
                     
-                    <blockquote className="text-gray-700 mb-6 leading-relaxed text-sm">
+                    <blockquote className="text-gray-700 mb-6 leading-relaxed text-sm whitespace-normal break-words hyphens-auto">
                       "{testimonial.content}"
                     </blockquote>
                     
@@ -91,7 +91,7 @@ const Testimonials = () => {
                   ))}
                 </div>
                 
-                <blockquote className="text-gray-700 mb-6 leading-relaxed">
+                <blockquote className="text-gray-700 mb-6 leading-relaxed break-words hyphens-auto">
                   "{testimonial.content}"
                 </blockquote>
                 
