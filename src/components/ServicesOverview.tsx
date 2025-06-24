@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Contact, Book } from "lucide-react";
+import { Users, Contact, Book, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const ServicesOverview = () => {
@@ -32,8 +32,7 @@ const ServicesOverview = () => {
         "Employee Engagement and Culture Initiatives",
         "Rewards Planning",
         "Change Management",
-        "Setting up HR in New Locations",
-        "MBTI Assessments & Team Analysis"
+        "Setting up HR in New Locations"
       ],
       color: "green"
     },
@@ -51,6 +50,21 @@ const ServicesOverview = () => {
         "Enabling Results Through Others"
       ],
       color: "purple"
+    },
+    {
+      title: "MBTI Services",
+      description: "Personality assessments and team development",
+      icon: Brain,
+      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=250&fit=crop",
+      services: [
+        "Individual MBTI Assessments",
+        "Team MBTI Analysis",
+        "Leadership Style Assessment",
+        "Communication Workshops",
+        "Team Building Sessions",
+        "Personality-Based Coaching"
+      ],
+      color: "orange"
     }
   ];
 
@@ -74,6 +88,12 @@ const ServicesOverview = () => {
           icon: "bg-purple-100 text-purple-600", 
           button: "bg-purple-600 hover:bg-purple-700"
         };
+      case "orange":
+        return {
+          bg: "bg-orange-50",
+          icon: "bg-orange-100 text-orange-600", 
+          button: "bg-orange-600 hover:bg-orange-700"
+        };
       default:
         return {
           bg: "bg-gray-50",
@@ -95,7 +115,7 @@ const ServicesOverview = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-8">
           {serviceCategories.map((category, index) => {
             const colors = getColorClasses(category.color);
             return (
@@ -131,7 +151,7 @@ const ServicesOverview = () => {
                     ))}
                   </ul>
                   
-                  {category.title === "For Organizations" ? (
+                  {category.title === "MBTI Services" ? (
                     <Link to="/mbti">
                       <Button className={`w-full ${colors.button} text-white`}>
                         Explore MBTI Services

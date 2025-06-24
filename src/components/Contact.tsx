@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Globe } from "lucide-react";
 
 const Contact = () => {
   return (
@@ -14,7 +14,7 @@ const Contact = () => {
             Ready to Transform Your Team?
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Get in touch with our MBTI experts to discuss your organization's needs and find the perfect solution.
+            Get in touch with our HR experts to discuss your organization's needs and find the perfect solution.
           </p>
         </div>
 
@@ -54,7 +54,7 @@ const Contact = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Message</label>
                 <Textarea 
-                  placeholder="Tell us about your MBTI assessment needs..."
+                  placeholder="Tell us about your HR needs..."
                   className="bg-gray-700 border-gray-600 text-white min-h-[100px]"
                 />
               </div>
@@ -70,18 +70,18 @@ const Contact = () => {
             <div>
               <h3 className="text-2xl font-bold mb-6">Get in Touch</h3>
               <p className="text-gray-300 mb-8">
-                Our team of certified MBTI practitioners is ready to help you unlock your organization's potential.
+                Our team of HR experts is ready to help you unlock your organization's potential.
               </p>
             </div>
 
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Mail className="h-6 w-6 text-white" />
+                  <Globe className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold">Email Us</div>
-                  <div className="text-gray-300">hello@mbtipro.com</div>
+                  <div className="font-semibold">Visit Our Website</div>
+                  <div className="text-gray-300">www.linkedupconsulting.com</div>
                 </div>
               </div>
 
