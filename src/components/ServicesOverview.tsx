@@ -104,23 +104,23 @@ const ServicesOverview = () => {
   };
 
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+    <section className="py-12 md:py-20 bg-gray-50">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Comprehensive HR Services
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Whether you're an individual looking to advance your career, an organization seeking to optimize your workforce, or an HR professional needing support, we have tailored solutions for you.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
           {serviceCategories.map((category, index) => {
             const colors = getColorClasses(category.color);
             return (
-              <Card key={index} className="bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-0 shadow-lg overflow-hidden">
-                <div className="relative h-48 overflow-hidden">
+              <Card key={index} className="bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-0 shadow-lg overflow-hidden h-full flex flex-col">
+                <div className="relative h-40 sm:h-48 overflow-hidden">
                   <img 
                     src={category.image} 
                     alt={category.title}
@@ -128,37 +128,37 @@ const ServicesOverview = () => {
                   />
                   <div className={`absolute inset-0 ${colors.bg} opacity-80`}></div>
                   <div className="absolute top-4 left-4">
-                    <div className={`w-12 h-12 ${colors.icon} rounded-lg flex items-center justify-center`}>
-                      <category.icon className="h-6 w-6" />
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 ${colors.icon} rounded-lg flex items-center justify-center`}>
+                      <category.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                   </div>
                 </div>
                 
-                <CardHeader>
-                  <CardTitle className="text-xl text-gray-900">{category.title}</CardTitle>
-                  <CardDescription className="text-gray-600">
+                <CardHeader className="pb-2 sm:pb-4">
+                  <CardTitle className="text-lg sm:text-xl text-gray-900 leading-tight">{category.title}</CardTitle>
+                  <CardDescription className="text-sm sm:text-base text-gray-600">
                     {category.description}
                   </CardDescription>
                 </CardHeader>
                 
-                <CardContent className="space-y-4">
-                  <ul className="space-y-2">
+                <CardContent className="space-y-4 flex-1 flex flex-col">
+                  <ul className="space-y-2 flex-1">
                     {category.services.map((service, serviceIndex) => (
-                      <li key={serviceIndex} className="flex items-start gap-2 text-sm text-gray-600">
+                      <li key={serviceIndex} className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
                         <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                        {service}
+                        <span className="leading-relaxed">{service}</span>
                       </li>
                     ))}
                   </ul>
                   
                   {category.title === "MBTI Services" ? (
-                    <Link to="/mbti">
-                      <Button className={`w-full ${colors.button} text-white`}>
+                    <Link to="/mbti" className="mt-auto">
+                      <Button className={`w-full ${colors.button} text-white text-sm sm:text-base py-2 sm:py-3`}>
                         Explore MBTI Services
                       </Button>
                     </Link>
                   ) : (
-                    <Button className={`w-full ${colors.button} text-white`}>
+                    <Button className={`w-full ${colors.button} text-white text-sm sm:text-base py-2 sm:py-3 mt-auto`}>
                       Contact Us
                     </Button>
                   )}
