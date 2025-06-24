@@ -1,13 +1,171 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
-import { calculateMBTIType } from "../../../src/utils/mbtiCalculator.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// MBTI Questions data structure (subset needed for calculation)
+interface MBTIQuestion {
+  dimension: 'EI' | 'SN' | 'TF' | 'JP';
+  direction: 'positive' | 'negative';
+}
+
+// MBTI calculation logic moved into the edge function
+interface MBTIScores {
+  E: number;
+  I: number;
+  S: number;
+  N: number;
+  T: number;
+  F: number;
+  J: number;
+  P: number;
+}
+
+interface MBTIResult {
+  type: string;
+  scores: MBTIScores;
+}
+
+// Simplified MBTI questions structure for calculation
+const mbtiQuestions: MBTIQuestion[] = [
+  // EI dimension (23 questions)
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' }, { dimension: 'EI', direction: 'negative' },
+  { dimension: 'EI', direction: 'positive' },
+  
+  // SN dimension (23 questions)
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' }, { dimension: 'SN', direction: 'negative' },
+  { dimension: 'SN', direction: 'positive' },
+  
+  // TF dimension (23 questions)
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' }, { dimension: 'TF', direction: 'negative' },
+  { dimension: 'TF', direction: 'positive' },
+  
+  // JP dimension (24 questions)
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' },
+  { dimension: 'JP', direction: 'positive' }, { dimension: 'JP', direction: 'negative' }
+];
+
+const calculateMBTIType = (responses: number[]): MBTIResult => {
+  const scores: MBTIScores = {
+    E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0
+  };
+
+  responses.forEach((response, index) => {
+    const question = mbtiQuestions[index];
+    if (!question) return;
+
+    // Convert response (1-7) to score (-3 to +3)
+    const score = response - 4;
+
+    switch (question.dimension) {
+      case 'EI':
+        if (question.direction === 'positive') {
+          scores.E += score;
+          scores.I -= score;
+        } else {
+          scores.I += score;
+          scores.E -= score;
+        }
+        break;
+      case 'SN':
+        if (question.direction === 'positive') {
+          scores.S += score;
+          scores.N -= score;
+        } else {
+          scores.N += score;
+          scores.S -= score;
+        }
+        break;
+      case 'TF':
+        if (question.direction === 'positive') {
+          scores.T += score;
+          scores.F -= score;
+        } else {
+          scores.F += score;
+          scores.T -= score;
+        }
+        break;
+      case 'JP':
+        if (question.direction === 'positive') {
+          scores.J += score;
+          scores.P -= score;
+        } else {
+          scores.P += score;
+          scores.J -= score;
+        }
+        break;
+    }
+  });
+
+  // Normalize scores to positive values
+  const normalizedScores = {
+    E: scores.E + 69, // 23 questions * 3 max score
+    I: scores.I + 69,
+    S: scores.S + 69, // 23 questions * 3 max score  
+    N: scores.N + 69,
+    T: scores.T + 69, // 23 questions * 3 max score
+    F: scores.F + 69,
+    J: scores.J + 72, // 24 questions * 3 max score
+    P: scores.P + 72
+  };
+
+  // Determine type
+  const type = 
+    (normalizedScores.E > normalizedScores.I ? 'E' : 'I') +
+    (normalizedScores.S > normalizedScores.N ? 'S' : 'N') +
+    (normalizedScores.T > normalizedScores.F ? 'T' : 'F') +
+    (normalizedScores.J > normalizedScores.P ? 'J' : 'P');
+
+  return {
+    type,
+    scores: normalizedScores
+  };
 };
 
 // MBTI Types data (simplified version for the email)
