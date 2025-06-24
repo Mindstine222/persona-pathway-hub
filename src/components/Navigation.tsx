@@ -20,9 +20,8 @@ const Navigation = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#services" className="text-gray-600 hover:text-blue-600 transition-colors">Services</a>
-            <a href="#packages" className="text-gray-600 hover:text-blue-600 transition-colors">Packages</a>
-            <a href="#about" className="text-gray-600 hover:text-blue-600 transition-colors">About</a>
+            <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
+            <Link to="/mbti" className="text-gray-600 hover:text-blue-600 transition-colors">MBTI Services</Link>
             <a href="#contact" className="text-gray-600 hover:text-blue-600 transition-colors">Contact</a>
             <Link to="/assessment" className="text-gray-600 hover:text-blue-600 transition-colors">Take Assessment</Link>
           </div>
@@ -53,9 +52,8 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <div className="flex flex-col space-y-4">
-              <a href="#services" className="text-gray-600 hover:text-blue-600 transition-colors">Services</a>
-              <a href="#packages" className="text-gray-600 hover:text-blue-600 transition-colors">Packages</a>
-              <a href="#about" className="text-gray-600 hover:text-blue-600 transition-colors">About</a>
+              <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
+              <Link to="/mbti" className="text-gray-600 hover:text-blue-600 transition-colors">MBTI Services</Link>
               <a href="#contact" className="text-gray-600 hover:text-blue-600 transition-colors">Contact</a>
               <Link to="/assessment" className="text-gray-600 hover:text-blue-600 transition-colors">Take Assessment</Link>
               <div className="flex flex-col gap-2 pt-4">
