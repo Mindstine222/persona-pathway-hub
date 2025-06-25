@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, Mail, Download } from "lucide-react";
+import { CheckCircle, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { calculateMBTIType } from "@/utils/mbtiCalculator";
 
 interface AssessmentCompletionProps {
   responses: number[];
@@ -31,11 +32,30 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('send-assessment-report', {
+      // Calculate MBTI type
+      const result = calculateMBTIType(responses);
+
+      // Store assessment in database
+      const { error: dbError } = await supabase
+        .from('assessments')
+        .insert([{
+          email: email,
+          responses: responses,
+          mbti_type: result.type,
+          user_id: null // Will be null for anonymous users
+        }]);
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error('Failed to save assessment');
+      }
+
+      // Send email with results
+      const { error: emailError } = await supabase.functions.invoke('send-assessment-report', {
         body: { email, responses }
       });
 
-      if (error) throw error;
+      if (emailError) throw emailError;
 
       setEmailSent(true);
       toast({
@@ -77,6 +97,12 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
               <li>• Career recommendations</li>
               <li>• Communication and relationship insights</li>
             </ul>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <p className="text-amber-800 text-sm">
+              <strong>Note:</strong> Your assessment has been saved. Enter your email below to receive your detailed results report.
+            </p>
           </div>
 
           {!emailSent ? (

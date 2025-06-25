@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Clock, Globe } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Contact = () => {
   return (
@@ -121,9 +122,11 @@ const Contact = () => {
               <p className="text-gray-300 mb-4 text-sm sm:text-base">
                 See our platform in action with a personalized demo for your team.
               </p>
-              <Button variant="outline" className="border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white w-full sm:w-auto">
-                Book Demo Call
-              </Button>
+              <Link to="/assessment">
+                <Button variant="outline" className="border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white w-full sm:w-auto">
+                  Start Free Assessment
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

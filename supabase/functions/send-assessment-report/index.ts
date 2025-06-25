@@ -1,8 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,6 +207,17 @@ const handler = async (req: Request): Promise<Response> => {
     // Calculate MBTI result
     const result = calculateMBTIType(responses);
     const typeInfo = mbtiTypes[result.type] || { name: "Unknown Type", description: "Unable to determine type." };
+
+    // Update the assessment record to mark results as sent
+    const { error: updateError } = await supabase
+      .from('assessments')
+      .update({ results_sent: true })
+      .eq('email', email)
+      .eq('responses', JSON.stringify(responses));
+
+    if (updateError) {
+      console.error('Error updating assessment:', updateError);
+    }
 
     // Generate HTML email content
     const htmlContent = `
