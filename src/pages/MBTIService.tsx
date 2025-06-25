@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -36,11 +37,11 @@ const MBTIService = () => {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Complete MBTI
+              Complete INTRA16
               <span className="text-blue-600 block">Assessment Services</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Unlock the power of personality insights with our comprehensive Myers-Briggs Type Indicator services. 
+              Unlock the power of personality insights with our comprehensive Intra-personal 16 Types services. 
               Perfect for individuals, teams, and organizations seeking deeper understanding and improved performance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -70,7 +71,7 @@ const MBTIService = () => {
               Our Comprehensive Services
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Explore our range of MBTI assessment services designed to meet your unique needs.
+              Explore our range of INTRA16 assessment services designed to meet your unique needs.
             </p>
           </div>
 
@@ -107,7 +108,7 @@ const MBTIService = () => {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 mb-4">
-                  Enhance team collaboration and communication through MBTI-based workshops.
+                  Enhance team collaboration and communication through INTRA16-based workshops.
                 </p>
                 <ul className="space-y-2">
                   <li className="flex items-center justify-center gap-2">
@@ -131,7 +132,7 @@ const MBTIService = () => {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 mb-4">
-                  Develop effective leadership skills with personalized MBTI insights.
+                  Develop effective leadership skills with personalized INTRA16 insights.
                 </p>
                 <ul className="space-y-2">
                   <li className="flex items-center justify-center gap-2">
@@ -179,7 +180,7 @@ const MBTIService = () => {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 mb-4">
-                  Optimize your HR strategies with MBTI-based insights and consulting.
+                  Optimize your HR strategies with INTRA16-based insights and consulting.
                 </p>
                 <ul className="space-y-2">
                   <li className="flex items-center justify-center gap-2">
@@ -203,7 +204,7 @@ const MBTIService = () => {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Choose Your MBTI Package
+              Choose Your INTRA16 Package
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Select the perfect solution for your needs, from individual assessments to enterprise-wide implementations.
@@ -360,7 +361,7 @@ const MBTIService = () => {
             Ready to Transform Your Organization?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of organizations that have unlocked their potential with our MBTI services.
+            Join thousands of organizations that have unlocked their potential with our INTRA16 services.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/assessment">

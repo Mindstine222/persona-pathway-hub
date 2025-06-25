@@ -13,15 +13,15 @@ const Navigation = () => {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
+              <span className="text-white font-bold text-lg">I</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">MBTIPro</span>
+            <span className="text-xl font-bold text-gray-900">INTRA16</span>
           </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-            <Link to="/mbti" className="text-gray-600 hover:text-blue-600 transition-colors">MBTI Services</Link>
+            <Link to="/mbti" className="text-gray-600 hover:text-blue-600 transition-colors">INTRA16 Services</Link>
             <a href="#contact" className="text-gray-600 hover:text-blue-600 transition-colors">Contact</a>
             <Link to="/assessment" className="text-gray-600 hover:text-blue-600 transition-colors">Take Assessment</Link>
           </div>
@@ -53,7 +53,7 @@ const Navigation = () => {
           <div className="md:hidden py-4 border-t border-gray-200">
             <div className="flex flex-col space-y-4">
               <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-              <Link to="/mbti" className="text-gray-600 hover:text-blue-600 transition-colors">MBTI Services</Link>
+              <Link to="/mbti" className="text-gray-600 hover:text-blue-600 transition-colors">INTRA16 Services</Link>
               <a href="#contact" className="text-gray-600 hover:text-blue-600 transition-colors">Contact</a>
               <Link to="/assessment" className="text-gray-600 hover:text-blue-600 transition-colors">Take Assessment</Link>
               <div className="flex flex-col gap-2 pt-4">

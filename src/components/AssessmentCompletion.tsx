@@ -65,7 +65,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
     setIsLoading(true);
     try {
-      // Calculate MBTI type
+      // Calculate result
       const result = calculateMBTIType(responses);
 
       // Store or update assessment in database with email
@@ -100,7 +100,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
       if (emailError) {
         console.error('Email function error:', emailError);
-        throw new Error('Failed to send email. Please check if RESEND_API_KEY is configured.');
+        throw new Error('Failed to send email. Please check if RESEND_API_KEY is configured in Supabase Edge Functions.');
       }
 
       setEmailSent(true);
@@ -131,13 +131,13 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-lg text-gray-600">
-            Congratulations! You've successfully completed the Myers-Briggs Type Indicator assessment.
+            Congratulations! You've successfully completed the INTRA16 personality assessment.
           </p>
           
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h3 className="font-semibold text-blue-900 mb-2">Your Comprehensive Report Includes:</h3>
             <ul className="text-left text-blue-800 space-y-1">
-              <li>• Your complete MBTI personality type</li>
+              <li>• Your complete personality type</li>
               <li>• Detailed analysis of your preferences</li>
               <li>• Strength and development areas</li>
               <li>• Career recommendations</li>

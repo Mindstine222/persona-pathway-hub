@@ -204,7 +204,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Email and responses are required");
     }
 
-    // Calculate MBTI result
+    // Calculate result
     const result = calculateMBTIType(responses);
     const typeInfo = mbtiTypes[result.type] || { name: "Unknown Type", description: "Unable to determine type." };
 
@@ -226,7 +226,7 @@ const handler = async (req: Request): Promise<Response> => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Your MBTI Assessment Report</title>
+          <title>Your INTRA16 Assessment Report</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f5f5f5; }
             .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -244,7 +244,7 @@ const handler = async (req: Request): Promise<Response> => {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Your MBTI Assessment Report</h1>
+              <h1>Your INTRA16 Assessment Report</h1>
               <p style="margin: 0; opacity: 0.9;">Discover your personality type and unlock your potential</p>
             </div>
             
@@ -299,7 +299,7 @@ const handler = async (req: Request): Promise<Response> => {
 
               <div class="section">
                 <h3>Understanding Your Results</h3>
-                <p>Your MBTI type represents your natural preferences for how you direct your energy, take in information, make decisions, and approach the outside world. Remember that:</p>
+                <p>Your personality type represents your natural preferences for how you direct your energy, take in information, make decisions, and approach the outside world. Remember that:</p>
                 <ul>
                   <li>All types are equally valuable and have unique strengths</li>
                   <li>You can develop skills outside your preferences</li>
@@ -310,8 +310,8 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <div class="footer">
-              <p>This report was generated based on your responses to the Myers-Briggs Type Indicator assessment.</p>
-              <p>For more detailed insights and career guidance, consider consulting with a certified MBTI practitioner.</p>
+              <p>This report was generated based on your responses to the INTRA16 personality assessment.</p>
+              <p>For more detailed insights and career guidance, consider consulting with a certified practitioner.</p>
             </div>
           </div>
         </body>
@@ -321,7 +321,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "Assessment Results <onboarding@resend.dev>",
       to: [email],
-      subject: `Your MBTI Assessment Results - ${result.type} (${typeInfo.name})`,
+      subject: `Your INTRA16 Assessment Results - ${result.type} (${typeInfo.name})`,
       html: htmlContent,
     });
 

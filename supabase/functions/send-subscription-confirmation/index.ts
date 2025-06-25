@@ -36,7 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to customer
     const customerEmailResponse = await resend.emails.send({
-      from: "MBTIPro <onboarding@resend.dev>",
+      from: "INTRA16 <onboarding@resend.dev>",
       to: [email],
       subject: `Subscription Request Received - ${packageDetails.name}`,
       html: `
@@ -82,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p>If you have any immediate questions, please don't hesitate to contact us.</p>
               </div>
               <div class="footer">
-                <p>Best regards,<br>The MBTIPro Team</p>
+                <p>Best regards,<br>The INTRA16 Team</p>
               </div>
             </div>
           </body>
@@ -92,8 +92,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification email to admin
     const adminEmailResponse = await resend.emails.send({
-      from: "MBTIPro <onboarding@resend.dev>",
-      to: ["admin@mbtipro.com"], // Replace with actual admin email
+      from: "INTRA16 <onboarding@resend.dev>",
+      to: ["admin@intra16.com"], // Replace with actual admin email
       subject: `New Subscription Request - ${packageDetails.name}`,
       html: `
         <h2>New Subscription Request</h2>
