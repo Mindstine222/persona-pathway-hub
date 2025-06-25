@@ -100,7 +100,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
       if (emailError) {
         console.error('Email function error:', emailError);
-        throw new Error('Failed to send email. Please check if RESEND_API_KEY is configured in Supabase Edge Functions.');
+        throw new Error('Failed to send email. Please check if RESEND_API_KEY is configured');
       }
 
       setEmailSent(true);
