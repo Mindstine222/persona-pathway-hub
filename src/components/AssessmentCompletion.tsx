@@ -18,7 +18,40 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [assessmentSaved, setAssessmentSaved] = useState(false);
   const { toast } = useToast();
+
+  // Save assessment automatically when component mounts
+  useState(() => {
+    const saveAssessment = async () => {
+      if (assessmentSaved) return;
+      
+      try {
+        const result = calculateMBTIType(responses);
+        
+        const { error } = await supabase
+          .from('assessments')
+          .insert([{
+            email: null, // Will be updated when user requests results
+            responses: responses,
+            mbti_type: result.type,
+            user_id: null, // Anonymous for now
+            results_sent: false
+          }]);
+
+        if (error) {
+          console.error('Error saving assessment:', error);
+        } else {
+          setAssessmentSaved(true);
+          console.log('Assessment saved successfully');
+        }
+      } catch (error) {
+        console.error('Error saving assessment:', error);
+      }
+    };
+
+    saveAssessment();
+  });
 
   const handleSendReport = async () => {
     if (!email) {
@@ -35,7 +68,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
       // Calculate MBTI type
       const result = calculateMBTIType(responses);
 
-      // Store assessment in database
+      // Store or update assessment in database with email
       const { error: dbError } = await supabase
         .from('assessments')
         .insert([{
@@ -47,7 +80,17 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
       if (dbError) {
         console.error('Database error:', dbError);
-        throw new Error('Failed to save assessment');
+        // If insert fails due to duplicate, try update
+        const { error: updateError } = await supabase
+          .from('assessments')
+          .update({ email: email, results_sent: false })
+          .eq('responses', JSON.stringify(responses))
+          .eq('mbti_type', result.type);
+        
+        if (updateError) {
+          console.error('Update error:', updateError);
+          throw new Error('Failed to save assessment');
+        }
       }
 
       // Send email with results
@@ -55,7 +98,10 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
         body: { email, responses }
       });
 
-      if (emailError) throw emailError;
+      if (emailError) {
+        console.error('Email function error:', emailError);
+        throw new Error('Failed to send email. Please check if RESEND_API_KEY is configured.');
+      }
 
       setEmailSent(true);
       toast({
@@ -66,7 +112,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
       console.error('Error sending report:', error);
       toast({
         title: "Error",
-        description: "Failed to send the report. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send the report. Please try again.",
         variant: "destructive",
       });
     } finally {
