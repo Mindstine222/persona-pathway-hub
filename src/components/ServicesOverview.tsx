@@ -52,13 +52,13 @@ const ServicesOverview = () => {
       color: "purple"
     },
     {
-      title: "MBTI Services",
+      title: "INTRA16 Services",
       description: "Personality assessments and team development",
       icon: Brain,
       image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=250&fit=crop",
       services: [
-        "Individual MBTI Assessments",
-        "Team MBTI Analysis",
+        "Individual INTRA16 Assessments",
+        "Team INTRA16 Analysis",
         "Leadership Style Assessment",
         "Communication Workshops",
         "Team Building Sessions",
@@ -100,6 +100,13 @@ const ServicesOverview = () => {
           icon: "bg-gray-100 text-gray-600",
           button: "bg-gray-600 hover:bg-gray-700"
         };
+    }
+  };
+
+  const scrollToContact = () => {
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -151,14 +158,17 @@ const ServicesOverview = () => {
                     ))}
                   </ul>
                   
-                  {category.title === "MBTI Services" ? (
+                  {category.title === "INTRA16 Services" ? (
                     <Link to="/mbti" className="mt-auto">
                       <Button className={`w-full ${colors.button} text-white text-sm sm:text-base py-2 sm:py-3`}>
-                        Explore MBTI Services
+                        Explore INTRA16 Services
                       </Button>
                     </Link>
                   ) : (
-                    <Button className={`w-full ${colors.button} text-white text-sm sm:text-base py-2 sm:py-3 mt-auto`}>
+                    <Button 
+                      onClick={scrollToContact}
+                      className={`w-full ${colors.button} text-white text-sm sm:text-base py-2 sm:py-3 mt-auto`}
+                    >
                       Contact Us
                     </Button>
                   )}

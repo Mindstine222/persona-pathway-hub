@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,7 +15,7 @@ const Contact = () => {
     email: "",
     company: "",
     message: "",
-    services: [] as string[]
+    services: ""
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -27,21 +26,35 @@ const Contact = () => {
     "Leadership Development",
     "Conflict Resolution",
     "HR Consulting",
+    "Personal Branding (Resume & LinkedIn Optimization)",
+    "Interview Preparation & Salary Negotiation",
+    "Networking Strategies",
+    "Job Search Support/Career Transition/Outplacement",
+    "Leadership and Manager Coaching/Workshops",
+    "Talent Acquisition",
+    "Employee Development Programs",
+    "Employee Engagement and Culture Initiatives",
+    "Rewards Planning",
+    "Change Management",
+    "Setting up HR in New Locations",
+    "Day-to-Day Work Support",
+    "Conflict Resolution & Communication",
+    "Mentorship",
+    "Work-Life Balance",
+    "Dealing with a Tough Manager",
+    "Enabling Results Through Others",
+    "Individual INTRA16 Assessments",
+    "Team INTRA16 Analysis",
+    "Leadership Style Assessment",
+    "Communication Workshops",
+    "Team Building Sessions",
+    "Personality-Based Coaching",
     "Starter Package ($99/month)",
     "Business Package ($299/month)",
     "Enterprise Package (Custom)",
     "Monthly Subscription ($49/month)",
     "Annual Subscription ($490/year)"
   ];
-
-  const handleServiceChange = (service: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      services: checked 
-        ? [...prev.services, service]
-        : prev.services.filter(s => s !== service)
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +86,7 @@ const Contact = () => {
         email: "",
         company: "",
         message: "",
-        services: []
+        services: ""
       });
     } catch (error) {
       toast({
@@ -141,21 +154,19 @@ const Contact = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Services of Interest</Label>
-                  <div className="grid grid-cols-1 gap-3 max-h-48 overflow-y-auto p-4 border rounded-md">
-                    {serviceOptions.map((service) => (
-                      <div key={service} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={service}
-                          checked={formData.services.includes(service)}
-                          onCheckedChange={(checked) => handleServiceChange(service, checked as boolean)}
-                        />
-                        <Label htmlFor={service} className="text-sm font-normal">
+                  <Label htmlFor="services">Service of Interest</Label>
+                  <Select value={formData.services} onValueChange={(value) => setFormData(prev => ({ ...prev, services: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a service" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {serviceOptions.map((service) => (
+                        <SelectItem key={service} value={service}>
                           {service}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
