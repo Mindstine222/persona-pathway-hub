@@ -223,7 +223,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error updating assessment:', updateError);
     }
 
-    // Generate HTML email content
+    // Generate HTML email content with improved deliverability
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -323,17 +323,34 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     console.log("Attempting to send email to:", email);
+    console.log("Using domain: linkedupconsulting.com");
 
     const emailResponse = await resend.emails.send({
-      from: "INTRA16 Assessment <info@linkedupconsulting.com>",
+      from: "INTRA16 Assessment <noreply@linkedupconsulting.com>",
       to: [email],
       subject: `Your INTRA16 Assessment Results - ${result.type} (${typeInfo.name})`,
       html: htmlContent,
+      reply_to: "support@linkedupconsulting.com",
+      headers: {
+        'X-Entity-Ref-ID': `assessment-${Date.now()}`,
+      },
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Resend API response:", JSON.stringify(emailResponse, null, 2));
 
-    return new Response(JSON.stringify({ success: true, emailResponse }), {
+    if (emailResponse.error) {
+      console.error("Resend API error:", emailResponse.error);
+      throw new Error(`Email sending failed: ${emailResponse.error.message || emailResponse.error}`);
+    }
+
+    console.log("Email sent successfully with ID:", emailResponse.data?.id);
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      emailId: emailResponse.data?.id,
+      recipient: email,
+      type: result.type
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
