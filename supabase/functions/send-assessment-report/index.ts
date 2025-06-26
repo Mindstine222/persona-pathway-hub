@@ -325,7 +325,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Attempting to send email to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "INTRA16 Assessment <noreply@linkedupconsulting.com>",
+      from: "INTRA16 Assessment <info@linkedupconsulting.com>",
       to: [email],
       subject: `Your INTRA16 Assessment Results - ${result.type} (${typeInfo.name})`,
       html: htmlContent,
