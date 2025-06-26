@@ -204,9 +204,13 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Email and responses are required");
     }
 
+    console.log("Processing assessment report for email:", email);
+
     // Calculate result
     const result = calculateMBTIType(responses);
     const typeInfo = mbtiTypes[result.type] || { name: "Unknown Type", description: "Unable to determine type." };
+
+    console.log("Calculated MBTI type:", result.type);
 
     // Update the assessment record to mark results as sent
     const { error: updateError } = await supabase
@@ -318,8 +322,10 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
+    console.log("Attempting to send email to:", email);
+
     const emailResponse = await resend.emails.send({
-      from: "Assessment Results <onboarding@resend.dev>",
+      from: "INTRA16 Assessment <noreply@linkedupconsulting.com>",
       to: [email],
       subject: `Your INTRA16 Assessment Results - ${result.type} (${typeInfo.name})`,
       html: htmlContent,
