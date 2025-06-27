@@ -200,15 +200,15 @@ const Contact = () => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-blue-600" />
-                    <span>info@intra16.com</span>
+                    <span>info@linkedupconsulting.com</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-blue-600" />
-                    <span>+1 (555) 123-4567</span>
+                    <span>+971 (547) 708-621</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-blue-600" />
-                    <span>123 Business Ave, Suite 100<br />City, State 12345</span>
+                    <span>505, s2 Cluster s JLT Dubai<br />City, State 12345</span>
                   </div>
                 </div>
               </CardContent>
