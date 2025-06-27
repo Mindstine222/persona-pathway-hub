@@ -10,12 +10,12 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">M</span>
+                <span className="text-white font-bold text-lg">L</span>
               </div>
-              <span className="text-xl font-bold">MBTIPro</span>
+              <span className="text-xl font-bold">Linked Up Consulting</span>
             </div>
             <p className="text-gray-400 leading-relaxed">
-              Transforming workplace dynamics through professional MBTI assessments and team development solutions.
+              Transforming workplace dynamics through professional INTRA16 assessments and team development solutions.
             </p>
             <div className="flex gap-4">
               <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors cursor-pointer">
@@ -46,7 +46,7 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold text-lg mb-4">Resources</h3>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#" className="hover:text-blue-400 transition-colors">MBTI Guide</a></li>
+              <li><a href="#" className="hover:text-blue-400 transition-colors">INTRA16 Guide</a></li>
               <li><a href="#" className="hover:text-blue-400 transition-colors">Case Studies</a></li>
               <li><a href="#" className="hover:text-blue-400 transition-colors">Webinars</a></li>
               <li><a href="#" className="hover:text-blue-400 transition-colors">Blog</a></li>
@@ -60,7 +60,7 @@ const Footer = () => {
             <div className="space-y-3 text-gray-400">
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-blue-400" />
-                <span>hello@mbtipro.com</span>
+                <span>info@linkedupconsulting.com</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-blue-400" />
@@ -76,7 +76,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400">
-            © 2024 MBTIPro. All rights reserved.
+            © 2024 linkedupconsulting. All rights reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">Privacy Policy</a>
