@@ -59,13 +59,13 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
   const isAnswered = responses[currentQuestion] !== 0;
 
   const answerOptions = [
-    { value: "1", size: "w-[46px] h-[46px]", borderColor: "bg-purple-400" },
-    { value: "2", size: "w-[38px] h-[38px]", borderColor: "bg-purple-400" },
-    { value: "3", size: "w-[32px] h-[32px]", borderColor: "bg-purple-400" },
-    { value: "4", size: "w-[28px] h-[28px]", boderColor: "bg-gray-300" },
-    { value: "5", size: "w-[32px] h-[32px]", borderColor: "bg-green-400" },
-    { value: "6", size: "w-[38px] h-[38px]", boderColor: "bg-green-400" },
-    { value: "7", size: "w-[46px] h-[46px]", borderColor: "bg-green-400" }
+    { value: "1", size: "w-[46px] h-[46px]", borderColor: "border-purple-400" },
+    { value: "2", size: "w-[38px] h-[38px]", borderColor: "border-purple-400" },
+    { value: "3", size: "w-[32px] h-[32px]", borderColor: "border-purple-400" },
+    { value: "4", size: "w-[28px] h-[28px]", boderColor: "border-gray-300" },
+    { value: "5", size: "w-[32px] h-[32px]", borderColor: "border-green-400" },
+    { value: "6", size: "w-[38px] h-[38px]", boderColor: "border-green-400" },
+    { value: "7", size: "w-[46px] h-[46px]", borderColor: "border-green-400" }
   ];
 
   return (
@@ -123,15 +123,15 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
                   </div>
                 </RadioGroup>
 
-                  <div className="flex justify-between items-center px-4 text-xs sm:text-sm font-semibold mb-2 sm:mb-4 text-gray-600">
+                           
+            </div>
+              
+            <div className="flex justify-between items-center px-4 text-xs sm:text-sm font-semibold mb-2 sm:mb-4 text-gray-600">
                     <span className="text-purple-600">Disagree</span>
                     <span className="text-green-600">Agree</span>
-                  </div>
+                  </div>  
 
-
-              
-            </div>
-
+            
             {/* Navigation */}
             {!isAnswered && (
               <div className="flex justify-between items-center pt-6 text-sm sm:text-base">
