@@ -102,9 +102,7 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
                   className="w-full flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4"
                   disabled={isTransitioning}
                 >
-                  <div className="flex justify-center sm:justify-start w-full sm:w-auto">
-                    <span className="text-xs sm:text-sm text-red-600 font-semibold">DISAGREE</span>
-                  </div>
+                
                 
                   <div className="flex gap-2 sm:gap-3 justify-center items-center flex-wrap sm:flex-nowrap">
                     {answerOptions.map((option) => (
@@ -123,12 +121,15 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
                       />
                     ))}
                   </div>
-                
-                  <div className="flex justify-center sm:justify-end w-full sm:w-auto">
-                    <span className="text-xs sm:text-sm text-green-600 font-semibold">AGREE</span>
-                  </div>
                 </RadioGroup>
 
+                  <div className="flex justify-between items-center px-4 text-xs sm:text-sm font-semibold mb-2 sm:mb-4 text-gray-600">
+                    <span className="text-purple-600">Disagree</span>
+                    <span className="text-green-600">Agree</span>
+                  </div>
+
+
+              
             </div>
 
             {/* Navigation */}
