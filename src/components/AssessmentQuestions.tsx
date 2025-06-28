@@ -99,31 +99,29 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
               <RadioGroup
                 value={responses[currentQuestion].toString()}
                 onValueChange={handleAnswerSelect}
-                className="flex items-center justify-center gap-4"
+                className="flex flex-wrap justify-center gap-3 sm:gap-4"
                 disabled={isTransitioning}
-              >
-                <span className="text-blue-500 text-sm font-medium mr-4">Disagree</span>
-                {answerOptions.map((option, index) => (
+                >
+                <span className="text-blue-500 text-xs sm:text-sm font-medium mr-2 sm:mr-4">Disagree</span>
+                {answerOptions.map((option) => (
                   <div key={option.value} className="flex flex-col items-center">
                     <RadioGroupItem 
                       value={option.value} 
                       id={`option${option.value}`}
-                      className={`w-12 h-12 rounded-full border-2 transition-all duration-200 ${
+                      className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full border-2 transition-all duration-200 ${
                         responses[currentQuestion].toString() === option.value
                           ? 'border-blue-500 bg-blue-500' 
                           : 'border-gray-300 hover:border-gray-400'
                       } ${isTransitioning ? 'pointer-events-none' : ''}`}
                     />
-                    <Label 
-                      htmlFor={`option${option.value}`} 
-                      className="sr-only"
-                    >
+                    <Label htmlFor={`option${option.value}`} className="sr-only">
                       {option.label || `Option ${option.value}`}
                     </Label>
                   </div>
                 ))}
-                <span className="text-green-500 text-sm font-medium ml-4">Agree</span>
+                <span className="text-green-500 text-xs sm:text-sm font-medium ml-2 sm:ml-4">Agree</span>
               </RadioGroup>
+
             </div>
 
             {/* Navigation - Only show if manual navigation is needed */}
