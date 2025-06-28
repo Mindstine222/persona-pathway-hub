@@ -71,8 +71,9 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full">
+    //<div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-2 sm:px-4 py-6">  
+    <div className="max-w-4xl w-full">
         {/* Progress Header */}
         <div className="text-center mb-8">
           <div className="flex justify-between items-center mb-4 text-sm text-gray-500">
