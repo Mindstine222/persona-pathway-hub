@@ -315,7 +315,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div class="footer">
               <p>This report was generated based on your responses to the INTRA16 personality assessment.</p>
-              <p>For more detailed insights and career guidance, consider consulting with a certified practitioner.</p>
+              <p>For more detailed insights and career guidance, consider consulting with Linked Up Consulting</p>
             </div>
           </div>
         </body>
@@ -326,7 +326,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Using domain: linkedupconsulting.com");
 
     const emailResponse = await resend.emails.send({
-      from: "INTRA16 Assessment <noreply@linkedupconsulting.com>",
+      from: "Linkedupconsulting - INTRA16 Assessment <info@duskydunes.com>",
       to: [email],
       subject: `Your INTRA16 Assessment Results - ${result.type} (${typeInfo.name})`,
       html: htmlContent,
