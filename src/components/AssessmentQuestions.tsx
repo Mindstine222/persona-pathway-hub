@@ -95,32 +95,37 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
             </div>
 
             {/* Answer Options - Horizontal circles */}
-            <div className="flex flex-col items-center gap-6 w-full mb-8 px-2 sm:px-0">
-                    <div className="w-full flex items-center justify-between">
-                      <span className="text-xs sm:text-sm text-green-600 font-semibold">AGREE</span>
-                  
-                      <div className="flex gap-2 sm:gap-3 justify-center items-center flex-1">
-                        {answerOptions.map((option) => (
-                          <RadioGroupItem
-                            key={option.value}
-                            value={option.value}
-                            id={`option${option.value}`}
-                            onClick={() => handleAnswerSelect(option.value)}
-                            className={`
-                              w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 transition
-                              ${
-                                responses[currentQuestion].toString() === option.value
-                                  ? 'bg-green-500 border-green-600'
-                                  : 'border-gray-300'
-                              }
-                            `}
-                          />
-                        ))}
-                      </div>
-                  
-                      <span className="text-xs sm:text-sm text-purple-600 font-semibold">DISAGREE</span>
-                    </div>
+               <div className="flex flex-col items-center gap-6 w-full mb-8 px-2 sm:px-0">
+                <RadioGroup
+                  value={responses[currentQuestion].toString()}
+                  onValueChange={handleAnswerSelect}
+                  className="w-full flex items-center justify-between"
+                  disabled={isTransitioning}
+                >
+                  <span className="text-xs sm:text-sm text-green-600 font-semibold">AGREE</span>
+              
+                  <div className="flex gap-2 sm:gap-3 justify-center items-center flex-1">
+                    {answerOptions.map((option) => (
+                      <RadioGroupItem
+                        key={option.value}
+                        value={option.value}
+                        id={`option${option.value}`}
+                        className={`
+                          w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 transition
+                          ${
+                            responses[currentQuestion].toString() === option.value
+                              ? 'bg-green-500 border-green-600'
+                              : 'border-gray-300 hover:border-gray-400'
+                          }
+                        `}
+                      />
+                    ))}
                   </div>
+              
+                  <span className="text-xs sm:text-sm text-purple-600 font-semibold">DISAGREE</span>
+                </RadioGroup>
+              </div>
+
 
             {/* Navigation - Only show if manual navigation is needed */}
             {!isAnswered && (
