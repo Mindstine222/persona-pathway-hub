@@ -59,13 +59,13 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
   const isAnswered = responses[currentQuestion] !== 0;
 
   const answerOptions = [
-    { value: "1", size: "w-[20px] h-[20px]", color: "bg-red-400" },
-    { value: "2", size: "w-[28px] h-[28px]", color: "bg-orange-400" },
-    { value: "3", size: "w-[36px] h-[36px]", color: "bg-yellow-400" },
-    { value: "4", size: "w-[44px] h-[44px]", color: "bg-gray-300" },
-    { value: "5", size: "w-[36px] h-[36px]", color: "bg-blue-300" },
-    { value: "6", size: "w-[28px] h-[28px]", color: "bg-green-400" },
-    { value: "7", size: "w-[20px] h-[20px]", color: "bg-green-600" }
+    { value: "1", size: "w-[46px] h-[46px]", borderColor: "bg-purple-400" },
+    { value: "2", size: "w-[38px] h-[38px]", borderColor: "bg-purple-400" },
+    { value: "3", size: "w-[32px] h-[32px]", borderColor: "bg-purple-400" },
+    { value: "4", size: "w-[28px] h-[28px]", boderColor: "bg-gray-300" },
+    { value: "5", size: "w-[32px] h-[32px]", borderColor: "bg-green-400" },
+    { value: "6", size: "w-[38px] h-[38px]", boderColor: "bg-green-400" },
+    { value: "7", size: "w-[46px] h-[46px]", borderColor: "bg-green-400" }
   ];
 
   return (
