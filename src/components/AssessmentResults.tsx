@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calculateMBTIType } from "@/utils/mbtiCalculator";
 import { mbtiTypes } from "@/data/mbtiTypes";
+import MBTIBarChart from "@/components/MBTIBarChart";
+
+
 
 interface AssessmentResultsProps {
   responses: number[];
@@ -18,7 +21,7 @@ const AssessmentResults = ({ responses, onRetakeTest }: AssessmentResultsProps) 
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl text-gray-900">Your MBTI Type</CardTitle>
+          <CardTitle className="text-3xl text-gray-900">Your INTRA16 Type</CardTitle>
           <div className="flex justify-center mt-4">
             <Badge className="text-2xl px-6 py-3 bg-blue-600 hover:bg-blue-700">
               {result.type}
@@ -27,7 +30,15 @@ const AssessmentResults = ({ responses, onRetakeTest }: AssessmentResultsProps) 
           <h2 className="text-xl text-gray-700 mt-2">{typeInfo.name}</h2>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
+          
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-3">Visual Personality Breakdown:</h3>
+          <MBTIBarChart scores={result.scores} />
+        </div>
+
+        
+        
+        <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Your Preferences:</h3>
               <div className="space-y-2">

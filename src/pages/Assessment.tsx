@@ -48,7 +48,7 @@ const Assessment = () => {
                 <span className="block text-blue-600">Personality Type</span>
               </h1>
               <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-                Take our comprehensive Myers-Briggs Type Indicator assessment and unlock insights about your personality.
+                Take our comprehensive INTRA16 Personality Type Indicator assessment and unlock insights about your personality.
               </p>
             </div>
 
