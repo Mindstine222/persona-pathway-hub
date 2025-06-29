@@ -352,75 +352,121 @@ const mbtiTypes: Record<string, any> = {
   }
 };
 
-// Function to analyze preference strength and provide insights
-const analyzePreferenceStrength = (scores: MBTIScores, type: string) => {
-  const gaps = {
-    EI: Math.abs(scores.E - scores.I),
-    SN: Math.abs(scores.S - scores.N),
-    TF: Math.abs(scores.T - scores.F),
-    JP: Math.abs(scores.J - scores.P)
-  };
+// Function to generate dynamic personalized insights
+const generatePersonalizedInsights = (scores: MBTIScores, type: string) => {
+  const insights = [];
 
-  const analysis = {
-    strongPreferences: [] as string[],
-    moderatePreferences: [] as string[],
-    weakPreferences: [] as string[],
-    insights: [] as string[]
-  };
-
-  // Analyze each dimension
-  Object.entries(gaps).forEach(([dimension, gap]) => {
-    const preference = type[dimension === 'EI' ? 0 : dimension === 'SN' ? 1 : dimension === 'TF' ? 2 : 3];
-    const dimensionName = dimension === 'EI' ? 'Energy Direction' : 
-                         dimension === 'SN' ? 'Information Processing' :
-                         dimension === 'TF' ? 'Decision Making' : 'Lifestyle Approach';
-
-    if (gap > 30) {
-      analysis.strongPreferences.push(`${dimensionName} (${preference})`);
-      analysis.insights.push(`You have a very clear preference for ${preference === 'E' ? 'Extraversion' : preference === 'I' ? 'Introversion' : preference === 'S' ? 'Sensing' : preference === 'N' ? 'Intuition' : preference === 'T' ? 'Thinking' : preference === 'F' ? 'Feeling' : preference === 'J' ? 'Judging' : 'Perceiving'}. This strong preference means you likely feel most comfortable and energized when operating in this mode.`);
-    } else if (gap > 15) {
-      analysis.moderatePreferences.push(`${dimensionName} (${preference})`);
-      analysis.insights.push(`You have a moderate preference for ${preference === 'E' ? 'Extraversion' : preference === 'I' ? 'Introversion' : preference === 'S' ? 'Sensing' : preference === 'N' ? 'Intuition' : preference === 'T' ? 'Thinking' : preference === 'F' ? 'Feeling' : preference === 'J' ? 'Judging' : 'Perceiving'}. You may find yourself comfortable using both approaches, though you lean toward one.`);
+  // Energy Direction Insights
+  const energyGap = Math.abs(scores.E - scores.I);
+  if (type[0] === 'E') {
+    if (energyGap > 30) {
+      insights.push("**Strong Extraversion**: You have a very clear preference for Extraversion. You likely feel most energized when interacting with others and may find isolation draining. Consider leveraging your natural networking abilities and collaborative spirit in your work.");
+    } else if (energyGap > 15) {
+      insights.push("**Moderate Extraversion**: While you prefer Extraversion, you also have some comfort with Introversion. This flexibility allows you to adapt to both social and solitary work situations effectively.");
     } else {
-      analysis.weakPreferences.push(`${dimensionName} (${preference})`);
-      analysis.insights.push(`Your preference for ${preference === 'E' ? 'Extraversion' : preference === 'I' ? 'Introversion' : preference === 'S' ? 'Sensing' : preference === 'N' ? 'Intuition' : preference === 'T' ? 'Thinking' : preference === 'F' ? 'Feeling' : preference === 'J' ? 'Judging' : 'Perceiving'} is quite mild. You likely have good access to both sides of this dimension and may switch between them depending on the situation.`);
+      insights.push("**Flexible Energy Direction**: Your energy preference is quite balanced. You can draw energy from both social interaction and quiet reflection, making you adaptable to various work environments.");
     }
-  });
+  } else {
+    if (energyGap > 30) {
+      insights.push("**Strong Introversion**: You have a clear preference for Introversion. You likely do your best thinking in quiet environments and may need time alone to recharge after social interactions. Your depth of focus is a significant strength.");
+    } else if (energyGap > 15) {
+      insights.push("**Moderate Introversion**: While you prefer Introversion, you can also engage effectively in social situations. This balance allows you to contribute thoughtfully in groups while maintaining your need for reflection.");
+    } else {
+      insights.push("**Flexible Energy Direction**: Your energy preference is quite balanced. You can draw energy from both quiet reflection and social interaction, giving you versatility in different situations.");
+    }
+  }
 
-  return analysis;
+  // Information Processing Insights
+  const infoGap = Math.abs(scores.S - scores.N);
+  if (type[1] === 'S') {
+    if (infoGap > 30) {
+      insights.push("**Strong Sensing Preference**: You have a clear preference for concrete, practical information. You excel at noticing details and working with real, tangible data. Your practical approach helps you implement ideas effectively.");
+    } else {
+      insights.push("**Balanced Information Processing**: While you lean toward Sensing, you can also appreciate abstract concepts and future possibilities. This gives you both practical grounding and innovative potential.");
+    }
+  } else {
+    if (infoGap > 30) {
+      insights.push("**Strong Intuitive Preference**: You have a clear preference for patterns, possibilities, and future potential. You excel at seeing the big picture and generating innovative ideas. Your visionary thinking is a key strength.");
+    } else {
+      insights.push("**Balanced Information Processing**: While you lean toward Intuition, you can also work effectively with concrete details when needed. This balance helps you both innovate and implement.");
+    }
+  }
+
+  // Decision Making Insights
+  const decisionGap = Math.abs(scores.T - scores.F);
+  if (type[2] === 'T') {
+    if (decisionGap > 30) {
+      insights.push("**Strong Thinking Preference**: You have a clear preference for logical, objective decision-making. You excel at analyzing situations rationally and making tough decisions based on facts and principles.");
+    } else {
+      insights.push("**Balanced Decision Making**: While you prefer logical analysis, you also consider the human impact of decisions. This balance helps you make decisions that are both rational and considerate.");
+    }
+  } else {
+    if (decisionGap > 30) {
+      insights.push("**Strong Feeling Preference**: You have a clear preference for value-based, people-centered decision-making. You excel at considering the human impact and maintaining harmony while making decisions.");
+    } else {
+      insights.push("**Balanced Decision Making**: While you prefer considering values and people, you can also apply logical analysis when needed. This balance helps you make well-rounded decisions.");
+    }
+  }
+
+  // Lifestyle Insights
+  const lifestyleGap = Math.abs(scores.J - scores.P);
+  if (type[3] === 'J') {
+    if (lifestyleGap > 30) {
+      insights.push("**Strong Judging Preference**: You have a clear preference for structure and closure. You excel at planning, organizing, and bringing projects to completion. Your reliability and follow-through are significant strengths.");
+    } else {
+      insights.push("**Balanced Lifestyle Approach**: While you prefer structure, you can also adapt to changing circumstances. This flexibility allows you to plan effectively while remaining open to new opportunities.");
+    }
+  } else {
+    if (lifestyleGap > 30) {
+      insights.push("**Strong Perceiving Preference**: You have a clear preference for flexibility and keeping options open. You excel at adapting to change and exploring new possibilities. Your spontaneity and adaptability are key strengths.");
+    } else {
+      insights.push("**Balanced Lifestyle Approach**: While you prefer flexibility, you can also work within structured environments when needed. This balance helps you adapt while still meeting deadlines and commitments.");
+    }
+  }
+
+  return insights;
 };
 
-// Function to generate visual bar chart as HTML/CSS
-const generateBarChart = (scores: MBTIScores, type: string) => {
+// Function to generate enhanced visual bar chart as HTML/CSS with proper labeling
+const generateEnhancedBarChart = (scores: MBTIScores, type: string) => {
   const dimensions = [
-    { name: 'Energy Direction', left: 'E', right: 'I', leftScore: scores.E, rightScore: scores.I },
-    { name: 'Information Processing', left: 'S', right: 'N', leftScore: scores.S, rightScore: scores.N },
-    { name: 'Decision Making', left: 'T', right: 'F', leftScore: scores.T, rightScore: scores.F },
-    { name: 'Lifestyle Approach', left: 'J', right: 'P', leftScore: scores.J, rightScore: scores.P }
+    { name: 'Energy Direction', left: 'E - Extraversion', right: 'I - Introversion', leftScore: scores.E, rightScore: scores.I },
+    { name: 'Information Processing', left: 'S - Sensing', right: 'N - Intuition', leftScore: scores.S, rightScore: scores.N },
+    { name: 'Decision Making', left: 'T - Thinking', right: 'F - Feeling', leftScore: scores.T, rightScore: scores.F },
+    { name: 'Lifestyle Approach', left: 'J - Judging', right: 'P - Perceiving', leftScore: scores.J, rightScore: scores.P }
   ];
 
   return dimensions.map(dim => {
     const total = dim.leftScore + dim.rightScore;
     const leftPercentage = Math.round((dim.leftScore / total) * 100);
     const rightPercentage = 100 - leftPercentage;
-    const isLeftPreferred = leftPercentage > 50;
+    const preferenceStrength = Math.abs(leftPercentage - rightPercentage) > 30 ? 'Strong preference' : 
+                              Math.abs(leftPercentage - rightPercentage) > 15 ? 'Moderate preference' : 'Flexible';
     
     return `
-      <div style="margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; color: #374151;">
-          <span>${dim.left} - ${dim.name.split(' ')[0]} ${dim.name.split(' ')[1] || ''}</span>
-          <span>${dim.right} - ${dim.name.split(' ')[dim.name.split(' ').length - 1]}</span>
+      <div style="margin: 25px 0; padding: 20px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #667eea;">
+        <h4 style="text-align: center; margin: 0 0 15px 0; color: #2c3e50; font-size: 18px;">${dim.name}</h4>
+        
+        <!-- Labels at the ends -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; color: #374151; font-size: 14px;">
+          <span>${dim.left}</span>
+          <span>${dim.right}</span>
         </div>
-        <div style="position: relative; height: 30px; background: #e5e7eb; border-radius: 15px; overflow: hidden;">
-          <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${leftPercentage}%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 15px 0 0 15px;"></div>
-          <div style="position: absolute; right: 0; top: 0; height: 100%; width: ${rightPercentage}%; background: linear-gradient(90deg, #8b5cf6, #7c3aed); border-radius: 0 15px 15px 0;"></div>
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; font-size: 12px;">
+        
+        <!-- Enhanced bar chart -->
+        <div style="position: relative; height: 35px; background: #e5e7eb; border-radius: 17px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="position: absolute; left: 0; top: 0; height: 100%; width: ${leftPercentage}%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 17px 0 0 17px; transition: width 0.5s ease;"></div>
+          <div style="position: absolute; right: 0; top: 0; height: 100%; width: ${rightPercentage}%; background: linear-gradient(90deg, #8b5cf6, #7c3aed); border-radius: 0 17px 17px 0; transition: width 0.5s ease;"></div>
+          
+          <!-- Percentage labels on the bar -->
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
             ${leftPercentage}% | ${rightPercentage}%
           </div>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 14px; color: #6b7280;">
-          <span>${dim.leftScore} points</span>
-          <span>${dim.rightScore} points</span>
+        
+        <!-- Preference strength indicator -->
+        <div style="text-align: center; margin-top: 10px; font-size: 12px; color: #6b7280; font-style: italic;">
+          ${preferenceStrength}
         </div>
       </div>
     `;
@@ -444,8 +490,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Calculate result
     const result = calculateMBTIType(responses);
     const typeInfo = mbtiTypes[result.type] || { name: "Unknown Type", description: "Unable to determine type." };
-    const preferenceAnalysis = analyzePreferenceStrength(result.scores, result.type);
-    const barChart = generateBarChart(result.scores, result.type);
+    const personalizedInsights = generatePersonalizedInsights(result.scores, result.type);
+    const enhancedBarChart = generateEnhancedBarChart(result.scores, result.type);
 
     console.log("Calculated MBTI type:", result.type);
 
@@ -460,15 +506,20 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error updating assessment:', updateError);
     }
 
-    // Generate comprehensive HTML email content
+    // Generate comprehensive HTML email content with dark mode support
     const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <meta name="color-scheme" content="light dark">
           <title>Your Comprehensive INTRA16 Assessment Report</title>
           <style>
+            :root {
+              color-scheme: light dark;
+            }
+            
             body { 
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
               line-height: 1.6; 
@@ -477,6 +528,14 @@ const handler = async (req: Request): Promise<Response> => {
               padding: 0; 
               background-color: #f5f7fa; 
             }
+            
+            @media (prefers-color-scheme: dark) {
+              body {
+                background-color: #1a1a1a;
+                color: #e5e5e5;
+              }
+            }
+            
             .container { 
               max-width: 800px; 
               margin: 0 auto; 
@@ -485,15 +544,31 @@ const handler = async (req: Request): Promise<Response> => {
               overflow: hidden; 
               box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .container {
+                background: #2a2a2a;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+              }
+            }
+            
             .header { 
               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
               color: white; 
               padding: 50px 40px; 
               text-align: center; 
             }
+            
             .content { 
               padding: 40px; 
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .content {
+                color: #e5e5e5;
+              }
+            }
+            
             .type-badge { 
               background: linear-gradient(135deg, #667eea, #764ba2); 
               color: white; 
@@ -505,6 +580,7 @@ const handler = async (req: Request): Promise<Response> => {
               margin: 15px 0; 
               letter-spacing: 2px;
             }
+            
             .section { 
               margin: 35px 0; 
               padding: 25px; 
@@ -512,14 +588,14 @@ const handler = async (req: Request): Promise<Response> => {
               border-radius: 12px; 
               border-left: 5px solid #667eea; 
             }
-            .strength-section {
-              background: linear-gradient(135deg, #d4edda, #c3e6cb);
-              border-left: 5px solid #28a745;
+            
+            @media (prefers-color-scheme: dark) {
+              .section {
+                background: #333333;
+                border-left-color: #8b5cf6;
+              }
             }
-            .weakness-section {
-              background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-              border-left: 5px solid #dc3545;
-            }
+            
             .insight-box {
               background: linear-gradient(135deg, #e3f2fd, #bbdefb);
               border-left: 5px solid #2196f3;
@@ -527,6 +603,38 @@ const handler = async (req: Request): Promise<Response> => {
               margin: 20px 0;
               border-radius: 8px;
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .insight-box {
+                background: linear-gradient(135deg, #1a237e, #283593);
+                color: #e3f2fd;
+              }
+            }
+            
+            .strength-section {
+              background: linear-gradient(135deg, #d4edda, #c3e6cb);
+              border-left: 5px solid #28a745;
+            }
+            
+            @media (prefers-color-scheme: dark) {
+              .strength-section {
+                background: linear-gradient(135deg, #1b5e20, #2e7d32);
+                color: #c8e6c9;
+              }
+            }
+            
+            .weakness-section {
+              background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+              border-left: 5px solid #dc3545;
+            }
+            
+            @media (prefers-color-scheme: dark) {
+              .weakness-section {
+                background: linear-gradient(135deg, #b71c1c, #c62828);
+                color: #ffcdd2;
+              }
+            }
+            
             .preference { 
               margin: 15px 0; 
               padding: 15px; 
@@ -537,6 +645,15 @@ const handler = async (req: Request): Promise<Response> => {
               align-items: center;
               box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .preference {
+                background: #404040;
+                color: #e5e5e5;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+              }
+            }
+            
             .footer { 
               background: #2c3e50; 
               color: white; 
@@ -544,11 +661,13 @@ const handler = async (req: Request): Promise<Response> => {
               text-align: center; 
               font-size: 14px; 
             }
+            
             h1 { 
               margin: 0; 
               font-size: 42px; 
               font-weight: 700;
             }
+            
             h2 { 
               color: #2c3e50; 
               margin-top: 0; 
@@ -556,44 +675,99 @@ const handler = async (req: Request): Promise<Response> => {
               border-bottom: 2px solid #667eea;
               padding-bottom: 10px;
             }
+            
+            @media (prefers-color-scheme: dark) {
+              h2 {
+                color: #e5e5e5;
+                border-bottom-color: #8b5cf6;
+              }
+            }
+            
             h3 { 
               color: #34495e; 
               margin-top: 0; 
               font-size: 22px;
             }
+            
+            @media (prefers-color-scheme: dark) {
+              h3 {
+                color: #e5e5e5;
+              }
+            }
+            
             h4 {
               color: #5a6c7d;
               font-size: 18px;
               margin-bottom: 15px;
             }
+            
+            @media (prefers-color-scheme: dark) {
+              h4 {
+                color: #b0b0b0;
+              }
+            }
+            
             .grid {
               display: grid;
               grid-template-columns: 1fr 1fr;
               gap: 20px;
               margin: 20px 0;
             }
+            
+            @media (max-width: 600px) {
+              .grid {
+                grid-template-columns: 1fr;
+              }
+            }
+            
             .card {
               background: white;
               padding: 20px;
               border-radius: 8px;
               box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .card {
+                background: #404040;
+                color: #e5e5e5;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+              }
+            }
+            
             .strength-item, .weakness-item {
               padding: 8px 12px;
               margin: 5px 0;
               border-radius: 6px;
               font-weight: 500;
             }
+            
             .strength-item {
               background: #d4edda;
               color: #155724;
               border-left: 4px solid #28a745;
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .strength-item {
+                background: #2e7d32;
+                color: #c8e6c9;
+              }
+            }
+            
             .weakness-item {
               background: #f8d7da;
               color: #721c24;
               border-left: 4px solid #dc3545;
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .weakness-item {
+                background: #c62828;
+                color: #ffcdd2;
+              }
+            }
+            
             .career-tag {
               display: inline-block;
               background: #e3f2fd;
@@ -604,6 +778,14 @@ const handler = async (req: Request): Promise<Response> => {
               font-size: 14px;
               font-weight: 500;
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .career-tag {
+                background: #1976d2;
+                color: #e3f2fd;
+              }
+            }
+            
             .score-summary {
               background: linear-gradient(135deg, #fff3cd, #ffeaa7);
               border: 1px solid #ffc107;
@@ -611,12 +793,20 @@ const handler = async (req: Request): Promise<Response> => {
               padding: 20px;
               margin: 20px 0;
             }
+            
+            @media (prefers-color-scheme: dark) {
+              .score-summary {
+                background: linear-gradient(135deg, #f57f17, #ff8f00);
+                border-color: #ffb300;
+                color: #fff;
+              }
+            }
+            
             @media (max-width: 600px) {
               .container { margin: 10px; }
               .header { padding: 30px 20px; }
               .content { padding: 20px; }
               h1 { font-size: 32px; }
-              .grid { grid-template-columns: 1fr; }
             }
           </style>
         </head>
@@ -636,34 +826,18 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="font-size: 18px; color: #5a6c7d; line-height: 1.8; max-width: 600px; margin: 0 auto;">${typeInfo.description}</p>
               </div>
 
-              <!-- Visual Preference Chart -->
+              <!-- Enhanced Visual Preference Chart -->
               <div class="section">
                 <h3>📊 Your Personality Preference Chart</h3>
-                <p style="color: #6b7280; margin-bottom: 20px;">This chart shows the strength of your preferences across the four personality dimensions:</p>
-                ${barChart}
+                <p style="color: #6b7280; margin-bottom: 20px;">This chart shows the strength of your preferences across the four personality dimensions with percentages:</p>
+                ${enhancedBarChart}
               </div>
 
-              <!-- Preference Strength Analysis -->
+              <!-- Dynamic Personalized Insights -->
               <div class="insight-box">
-                <h3>🔍 Preference Strength Analysis</h3>
-                ${preferenceAnalysis.strongPreferences.length > 0 ? `
-                  <h4>Strong Preferences:</h4>
-                  <ul>${preferenceAnalysis.strongPreferences.map(pref => `<li><strong>${pref}</strong></li>`).join('')}</ul>
-                ` : ''}
-                ${preferenceAnalysis.moderatePreferences.length > 0 ? `
-                  <h4>Moderate Preferences:</h4>
-                  <ul>${preferenceAnalysis.moderatePreferences.map(pref => `<li>${pref}</li>`).join('')}</ul>
-                ` : ''}
-                ${preferenceAnalysis.weakPreferences.length > 0 ? `
-                  <h4>Flexible Areas:</h4>
-                  <ul>${preferenceAnalysis.weakPreferences.map(pref => `<li>${pref}</li>`).join('')}</ul>
-                ` : ''}
-              </div>
-
-              <!-- Detailed Insights -->
-              <div class="section">
-                <h3>💡 Personalized Insights</h3>
-                ${preferenceAnalysis.insights.map(insight => `<p style="margin: 15px 0; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #667eea;">${insight}</p>`).join('')}
+                <h3>💡 Your Personalized Insights</h3>
+                <p style="margin-bottom: 20px;">Based on your specific scores and preference strengths:</p>
+                ${personalizedInsights.map(insight => `<p style="margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.2); border-radius: 6px; border-left: 4px solid #2196f3;">${insight}</p>`).join('')}
               </div>
 
               <!-- Strengths and Development Areas -->
@@ -681,13 +855,13 @@ const handler = async (req: Request): Promise<Response> => {
               <!-- Work Style and Communication -->
               <div class="section">
                 <h3>🏢 Your Work Style</h3>
-                <p style="background: white; padding: 15px; border-radius: 6px; margin: 10px 0;">${typeInfo.workStyle}</p>
+                <p style="background: rgba(255,255,255,0.7); padding: 15px; border-radius: 6px; margin: 10px 0;">${typeInfo.workStyle}</p>
                 
                 <h4>Communication Preferences:</h4>
-                <p style="background: white; padding: 15px; border-radius: 6px; margin: 10px 0;">${typeInfo.communication}</p>
+                <p style="background: rgba(255,255,255,0.7); padding: 15px; border-radius: 6px; margin: 10px 0;">${typeInfo.communication}</p>
                 
                 <h4>Leadership Style:</h4>
-                <p style="background: white; padding: 15px; border-radius: 6px; margin: 10px 0;">${typeInfo.leadership}</p>
+                <p style="background: rgba(255,255,255,0.7); padding: 15px; border-radius: 6px; margin: 10px 0;">${typeInfo.leadership}</p>
               </div>
 
               <!-- Career Recommendations -->
@@ -705,59 +879,6 @@ const handler = async (req: Request): Promise<Response> => {
                 <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 15px;">
                   <strong>What typically causes you stress:</strong>
                   <p style="margin: 10px 0 0 0;">${typeInfo.stress}</p>
-                </div>
-              </div>
-
-              <!-- Score Summary -->
-              <div class="score-summary">
-                <h3>📈 Your Detailed Scores</h3>
-                <div class="grid">
-                  <div>
-                    <h4>Energy Direction</h4>
-                    <div class="preference">
-                      <span>Extraversion (E)</span>
-                      <span><strong>${result.scores.E} points</strong></span>
-                    </div>
-                    <div class="preference">
-                      <span>Introversion (I)</span>
-                      <span><strong>${result.scores.I} points</strong></span>
-                    </div>
-                  </div>
-                  <div>
-                    <h4>Information Processing</h4>
-                    <div class="preference">
-                      <span>Sensing (S)</span>
-                      <span><strong>${result.scores.S} points</strong></span>
-                    </div>
-                    <div class="preference">
-                      <span>Intuition (N)</span>
-                      <span><strong>${result.scores.N} points</strong></span>
-                    </div>
-                  </div>
-                </div>
-                <div class="grid">
-                  <div>
-                    <h4>Decision Making</h4>
-                    <div class="preference">
-                      <span>Thinking (T)</span>
-                      <span><strong>${result.scores.T} points</strong></span>
-                    </div>
-                    <div class="preference">
-                      <span>Feeling (F)</span>
-                      <span><strong>${result.scores.F} points</strong></span>
-                    </div>
-                  </div>
-                  <div>
-                    <h4>Lifestyle Approach</h4>
-                    <div class="preference">
-                      <span>Judging (J)</span>
-                      <span><strong>${result.scores.J} points</strong></span>
-                    </div>
-                    <div class="preference">
-                      <span>Perceiving (P)</span>
-                      <span><strong>${result.scores.P} points</strong></span>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -801,12 +922,12 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log("Attempting to send comprehensive email to:", email);
+    console.log("Attempting to send enhanced email to:", email);
 
     const emailResponse = await resend.emails.send({
       from: "Linkedupconsulting - INTRA16 Assessment <info@duskydunes.com>",
       to: [email],
-      subject: `Your Comprehensive INTRA16 Report - ${result.type} (${typeInfo.name})`,
+      subject: `Your Enhanced INTRA16 Report - ${result.type} (${typeInfo.name})`,
       html: htmlContent,
       reply_to: "support@linkedupconsulting.com",
       headers: {
@@ -821,14 +942,14 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`Email sending failed: ${emailResponse.error.message || emailResponse.error}`);
     }
 
-    console.log("Comprehensive email sent successfully with ID:", emailResponse.data?.id);
+    console.log("Enhanced email sent successfully with ID:", emailResponse.data?.id);
 
     return new Response(JSON.stringify({ 
       success: true, 
       emailId: emailResponse.data?.id,
       recipient: email,
       type: result.type,
-      comprehensive: true
+      enhanced: true
     }), {
       status: 200,
       headers: {
