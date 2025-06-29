@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calculateMBTIType } from "@/utils/mbtiCalculator";
 import { mbtiTypes } from "@/data/mbtiTypes";
+import MBTIBarChart from "@/components/MBTIBarChart";
 
 interface AssessmentResultsProps {
   responses: number[];
@@ -146,169 +147,123 @@ const AssessmentResults = ({ responses, onRetakeTest }: AssessmentResultsProps) 
 
   const personalizedInsights = generatePersonalizedInsights();
 
-  // Enhanced bar chart component with proper labeling
-  const EnhancedBarChart = () => {
-    const dimensions = [
-      { 
-        name: 'Energy Direction', 
-        left: { label: 'E - Extraversion', score: result.scores.E }, 
-        right: { label: 'I - Introversion', score: result.scores.I }
-      },
-      { 
-        name: 'Information Processing', 
-        left: { label: 'S - Sensing', score: result.scores.S }, 
-        right: { label: 'N - Intuition', score: result.scores.N }
-      },
-      { 
-        name: 'Decision Making', 
-        left: { label: 'T - Thinking', score: result.scores.T }, 
-        right: { label: 'F - Feeling', score: result.scores.F }
-      },
-      { 
-        name: 'Lifestyle Approach', 
-        left: { label: 'J - Judging', score: result.scores.J }, 
-        right: { label: 'P - Perceiving', score: result.scores.P }
-      }
-    ];
+  return (
+    <div className="max-w-6xl mx-auto space-y-8 p-4">
+      {/* Main Results Grid */}
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Left Column - Chart */}
+        <div>
+          <MBTIBarChart scores={result.scores} />
+        </div>
 
-    return (
-      <div className="space-y-6">
-        {dimensions.map((dim, index) => {
-          const total = dim.left.score + dim.right.score;
-          const leftPercentage = Math.round((dim.left.score / total) * 100);
-          const rightPercentage = 100 - leftPercentage;
-          
-          return (
-            <div key={index} className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-gray-100 text-center">{dim.name}</h4>
-              
-              {/* Labels at the ends */}
-              <div className="flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <span>{dim.left.label}</span>
-                <span>{dim.right.label}</span>
+        {/* Right Column - Type Info */}
+        <div className="space-y-6">
+          {/* Main Type Card */}
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <Badge className="text-3xl px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                  {result.type}
+                </Badge>
               </div>
-              
-              {/* Bar chart */}
-              <div className="relative h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div 
-                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
-                  style={{ width: `${leftPercentage}%` }}
-                />
-                <div 
-                  className="absolute right-0 top-0 h-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all duration-500"
-                  style={{ width: `${rightPercentage}%` }}
-                />
-                
-                {/* Percentage labels on the bar */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">
-                    {leftPercentage}% | {rightPercentage}%
-                  </span>
+              <CardTitle className="text-2xl text-gray-900 dark:text-gray-100">{typeInfo.name}</CardTitle>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">{typeInfo.description}</p>
+            </CardHeader>
+          </Card>
+
+          {/* Dominant Trait Summary */}
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🎯</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">
+                    {result.scores.E > result.scores.I ? 'Extraverted' : 'Introverted'} • {' '}
+                    {result.scores.S > result.scores.N ? 'Observant' : 'Intuitive'} • {' '}
+                    {result.scores.T > result.scores.F ? 'Thinking' : 'Feeling'} • {' '}
+                    {result.scores.J > result.scores.P ? 'Judging' : 'Prospecting'}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                    Your dominant personality traits combination
+                  </p>
                 </div>
               </div>
-              
-              {/* Preference strength indicator */}
-              <div className="text-center text-xs text-gray-600 dark:text-gray-400">
-                {Math.abs(leftPercentage - rightPercentage) > 30 ? 'Strong preference' : 
-                 Math.abs(leftPercentage - rightPercentage) > 15 ? 'Moderate preference' : 'Flexible'}
-              </div>
-            </div>
-          );
-        })}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    );
-  };
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-6 p-4">
-      {/* Main Type Card */}
-      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl text-gray-900 dark:text-gray-100">Your INTRA16 Type</CardTitle>
-          <div className="flex justify-center mt-4">
-            <Badge className="text-2xl px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white">
-              {result.type}
-            </Badge>
-          </div>
-          <h2 className="text-xl text-gray-700 dark:text-gray-300 mt-2">{typeInfo.name}</h2>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          
-          {/* Enhanced Visual Chart */}
-          <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-6 text-center">Personality Preference Chart</h3>
-            <EnhancedBarChart />
-          </div>
-
-          {/* Personalized Insights */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">💡 Your Personalized Insights</h3>
-            <div className="space-y-4">
+      {/* Full Width Sections */}
+      <div className="space-y-8">
+        {/* Personalized Insights */}
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-2xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <span>💡</span> Your Personalized Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
               {personalizedInsights.map((insight, index) => (
-                <div key={index} className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-blue-500">
-                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">{insight.title}</h4>
+                <div key={index} className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border-l-4 border-blue-500">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">{insight.title}</h4>
                   <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{insight.content}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Type Description */}
-          <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Description</h3>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{typeInfo.description}</p>
-          </div>
-
-          {/* Strengths and Development Areas */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">💪 Key Strengths</h3>
-              <div className="space-y-2">
+        {/* Strengths and Career Suggestions */}
+        <div className="grid md:grid-cols-2 gap-8">
+          <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+            <CardHeader>
+              <CardTitle className="text-xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <span>💪</span> Key Strengths
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
                 {typeInfo.strengths.map((strength, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={index} className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-gray-700 dark:text-gray-300">{strength}</span>
                   </div>
                 ))}
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-lg">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">🎯 Development Areas</h3>
-              <div className="space-y-2">
-                {typeInfo.careers.slice(0, 6).map((area, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                    <span className="text-gray-700 dark:text-gray-300">Consider: {area}</span>
-                  </div>
+          <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800">
+            <CardHeader>
+              <CardTitle className="text-xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <span>🚀</span> Career Suggestions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {typeInfo.careers.map((career, index) => (
+                  <Badge key={index} variant="outline" className="text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600">
+                    {career}
+                  </Badge>
                 ))}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Career Suggestions */}
-          <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">🚀 Career Suggestions</h3>
-            <div className="flex flex-wrap gap-2">
-              {typeInfo.careers.map((career, index) => (
-                <Badge key={index} variant="outline" className="text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600">
-                  {career}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-center gap-4 pt-6">
-            <Button onClick={onRetakeTest} variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-              Retake Assessment
-            </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              Download Report
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4 pt-6">
+          <Button onClick={onRetakeTest} variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-8 py-3">
+            Retake Assessment
+          </Button>
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+            Download Full Report
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
