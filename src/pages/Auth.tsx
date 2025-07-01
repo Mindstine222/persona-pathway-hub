@@ -42,10 +42,13 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You have successfully logged in.",
           });
-          navigate("/");
+          navigate("/dashboard");
         }
       } else {
-        const redirectUrl = `${window.location.origin}/`;
+        // Use production domain for email redirect
+        const redirectUrl = window.location.hostname === 'localhost' 
+          ? `${window.location.origin}/dashboard`
+          : 'https://duskydunes.com/dashboard';
         
         const { error } = await supabase.auth.signUp({
           email,
@@ -68,7 +71,7 @@ const Auth = () => {
         } else {
           toast({
             title: "Account created!",
-            description: "Please check your email to verify your account.",
+            description: "Please check your email to verify your account. You'll be redirected to your dashboard after verification.",
           });
         }
       }
@@ -104,6 +107,11 @@ const Auth = () => {
             <CardTitle className="text-2xl">
               {isLogin ? "Welcome Back" : "Create Account"}
             </CardTitle>
+            {!isLogin && (
+              <p className="text-sm text-gray-600 mt-2">
+                Join thousands discovering their personality type
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAuth} className="space-y-4">
@@ -154,6 +162,11 @@ const Auth = () => {
                   placeholder="••••••••"
                   required
                 />
+                {!isLogin && (
+                  <p className="text-xs text-gray-500">
+                    Minimum 6 characters required
+                  </p>
+                )}
               </div>
 
               <Button 
@@ -161,7 +174,7 @@ const Auth = () => {
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
               >
-                {isLoading ? "Please wait..." : (isLogin ? "Sign In" : "Sign Up")}
+                {isLoading ? "Please wait..." : (isLogin ? "Sign In" : "Create Account")}
               </Button>
             </form>
 
@@ -177,6 +190,14 @@ const Auth = () => {
                 </Button>
               </p>
             </div>
+
+            {isLogin && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-xs text-blue-700 text-center">
+                  🔒 Your data is secure and will never be shared
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
