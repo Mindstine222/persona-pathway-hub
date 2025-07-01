@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -36,14 +37,6 @@ const Auth = () => {
             description: error.message,
             variant: "destructive",
           });
-        } else if (data.user && !data.user.email_confirmed_at) {
-          // User exists but email is not verified
-          await supabase.auth.signOut(); // Sign them out immediately
-          toast({
-            title: "Email verification required",
-            description: "Please verify your email to access your dashboard. Check your inbox for the verification link.",
-            variant: "destructive",
-          });
         } else {
           toast({
             title: "Welcome back!",
@@ -52,18 +45,12 @@ const Auth = () => {
           navigate("/dashboard");
         }
       } else {
-        // Check if user already exists first
-        const { data: existingUser } = await supabase.auth.signInWithPassword({
-          email,
-          password: "dummy-password", // This will fail but help us detect existing users
-        });
-
         // Use production domain for email redirect
         const redirectUrl = window.location.hostname === 'localhost' 
           ? `${window.location.origin}/dashboard`
           : 'https://duskydunes.com/dashboard';
         
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -76,33 +63,16 @@ const Auth = () => {
         });
 
         if (error) {
-          // Check if it's a user already registered error
-          if (error.message.includes("already registered") || error.message.includes("already been registered")) {
-            toast({
-              title: "Account already exists",
-              description: "This email is already registered. Please log in or use 'Forgot Password' to reset your password.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Signup failed",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
-        } else if (data.user && !data.session) {
-          // User created but needs email confirmation
+          toast({
+            title: "Signup failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
           toast({
             title: "Account created!",
             description: "Please check your email to verify your account. You'll be redirected to your dashboard after verification.",
           });
-        } else if (data.user && data.session) {
-          // User was created and automatically signed in (email confirmation disabled)
-          toast({
-            title: "Account created!",
-            description: "Welcome to INTRA16!",
-          });
-          navigate("/dashboard");
         }
       }
     } catch (error: any) {

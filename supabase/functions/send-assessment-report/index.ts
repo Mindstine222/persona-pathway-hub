@@ -187,7 +187,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div class="footer">
             <p>This assessment was powered by <strong>INTRA16</strong> - Advanced Personality Insights</p>
-            <p>Questions? Contact us at <a href="mailto:info@duskydunes.com">info@duskydunes.com</a></p>
+            <p>Questions? Contact us at <a href="mailto:support@duskydunes.com">support@duskydunes.com</a></p>
             <p style="font-size: 12px; color: #94A3B8;">
               You're receiving this email because you completed a personality assessment on our platform.
             </p>
@@ -201,8 +201,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      messageId: emailResponse.data?.id,
-      message: "Assessment report sent successfully"
+      messageId: emailResponse.data?.id 
     }), {
       status: 200,
       headers: {
