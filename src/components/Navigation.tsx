@@ -57,12 +57,15 @@ const Navigation = () => {
             <Link to="/mbti" className="text-gray-600 hover:text-blue-600 transition-colors">INTRA16 Services</Link>
             <button onClick={scrollToContact} className="text-gray-600 hover:text-blue-600 transition-colors">Contact</button>
             <Link to="/assessment" className="text-gray-600 hover:text-blue-600 transition-colors">Take Assessment</Link>
+            {user && (
+              <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors">Dashboard</Link>
+            )}
           </div>
 
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">Welcome, {user.email}</span>
+                <span className="text-sm text-gray-600">Welcome, {user.user_metadata?.first_name || user.email}</span>
                 <Button variant="ghost" onClick={handleSignOut} className="text-gray-600 hover:text-blue-600">
                   Sign Out
                 </Button>
@@ -102,10 +105,13 @@ const Navigation = () => {
               <Link to="/mbti" className="text-gray-600 hover:text-blue-600 transition-colors" onClick={() => setIsMenuOpen(false)}>INTRA16 Services</Link>
               <button onClick={scrollToContact} className="text-gray-600 hover:text-blue-600 transition-colors text-left">Contact</button>
               <Link to="/assessment" className="text-gray-600 hover:text-blue-600 transition-colors" onClick={() => setIsMenuOpen(false)}>Take Assessment</Link>
+              {user && (
+                <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+              )}
               
               {user ? (
                 <div className="flex flex-col gap-2 pt-4">
-                  <span className="text-sm text-gray-600">Welcome, {user.email}</span>
+                  <span className="text-sm text-gray-600">Welcome, {user.user_metadata?.first_name || user.email}</span>
                   <Button variant="ghost" onClick={handleSignOut} className="justify-start text-gray-600 hover:text-blue-600">
                     Sign Out
                   </Button>
