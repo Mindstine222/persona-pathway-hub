@@ -13,10 +13,8 @@ interface AssessmentHistory {
   id: string;
   completed_at: string;
   mbti_type: string;
-  responses: any;
+  scores: any;
   email: string;
-  user_id: string;
-  results_sent: boolean;
 }
 
 const Dashboard = () => {
