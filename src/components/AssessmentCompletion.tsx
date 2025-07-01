@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,37 +20,39 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
   const [assessmentSaved, setAssessmentSaved] = useState(false);
   const { toast } = useToast();
 
-  // Save assessment automatically when component mounts
-  useState(() => {
+  // Save assessment anonymously on first load
+  useEffect(() => {
     const saveAssessment = async () => {
       if (assessmentSaved) return;
-      
+
       try {
         const result = calculateMBTIType(responses);
-        
+
         const { error } = await supabase
-          .from('assessments')
-          .insert([{
-            email: null, // Will be updated when user requests results
-            responses: responses,
-            mbti_type: result.type,
-            user_id: null, // Anonymous for now
-            results_sent: false
-          }]);
+          .from("assessments")
+          .insert([
+            {
+              email: null,
+              responses: responses,
+              mbti_type: result.type,
+              user_id: null,
+              results_sent: false,
+            },
+          ]);
 
         if (error) {
-          console.error('Error saving assessment:', error);
+          console.error("Error saving assessment:", error);
         } else {
           setAssessmentSaved(true);
-          console.log('Assessment saved successfully');
+          console.log("Assessment saved successfully.");
         }
       } catch (error) {
-        console.error('Error saving assessment:', error);
+        console.error("Unexpected error saving assessment:", error);
       }
     };
 
     saveAssessment();
-  });
+  }, [assessmentSaved, responses]);
 
   const handleSendReport = async () => {
     if (!email) {
@@ -64,67 +65,41 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
     }
 
     setIsLoading(true);
+
     try {
-      // Calculate result
       const result = calculateMBTIType(responses);
 
-      // Store or update assessment in database with email
-      const { error: dbError } = await supabase
-        .from('assessments')
-        .insert([{
-          email: email,
-          responses: responses,
-          mbti_type: result.type,
-          user_id: null // Will be null for anonymous users
-        }]);
+      // Update existing record by responses
+      const { error: updateError } = await supabase
+        .from("assessments")
+        .update({ email, results_sent: false })
+        .eq("responses", JSON.stringify(responses));
 
-      if (dbError) {
-        console.error('Database error:', dbError);
-        // If insert fails due to duplicate, try update
-        const { error: updateError } = await supabase
-          .from('assessments')
-          .update({ email: email, results_sent: false })
-          .eq('responses', JSON.stringify(responses))
-          .eq('mbti_type', result.type);
-        
-        if (updateError) {
-          console.error('Update error:', updateError);
-          throw new Error('Failed to save assessment');
-        }
+      if (updateError) {
+        console.error("Error updating record:", updateError);
+        throw new Error("Could not update record with email.");
       }
 
-    // Prepare data in the format expected by the edge function
-          const emailData = {
-            email: email,
-            name: email.split('@')[0], // Use part before @ as name
-            personalityType: result.type,
-            scores: result.scores,
-            insights: result.insights || []
-          };
-    
-          console.log('Sending email data:', emailData);
-
-      
-      // Send email with results
-      const { error: emailError } = await supabase.functions.invoke('send-assessment-report', {
-        body: { email, responses }
+      // Call edge function to send report
+      const { error: emailError } = await supabase.functions.invoke("send-assessment-report", {
+        body: { email, responses },
       });
 
       if (emailError) {
-        console.error('Email function error:', emailError);
-        throw new Error('Failed to send email. Please check if RESEND_API_KEY is configured');
+        console.error("Failed to send report:", emailError);
+        throw new Error("Failed to send email. Please check server logs or resend config.");
       }
 
       setEmailSent(true);
       toast({
         title: "Report sent!",
-        description: "Your personality assessment report has been sent to your email.",
+        description: `Your personality assessment report was sent to ${email}`,
       });
-    } catch (error) {
-      console.error('Error sending report:', error);
+    } catch (error: any) {
+      console.error("Error:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send the report. Please try again.",
+        title: "Error sending report",
+        description: error.message || "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -145,7 +120,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           <p className="text-lg text-gray-600">
             Congratulations! You've successfully completed the INTRA16 personality assessment.
           </p>
-          
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h3 className="font-semibold text-blue-900 mb-2">Your Comprehensive Report Includes:</h3>
             <ul className="text-left text-blue-800 space-y-1">
@@ -176,8 +151,8 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
                   className="w-full"
                 />
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={handleSendReport}
                 disabled={isLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
@@ -199,11 +174,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           )}
 
           <div className="flex justify-center gap-4 pt-4">
-            <Button 
-              onClick={onRetakeTest} 
-              variant="outline" 
-              className="px-6"
-            >
+            <Button onClick={onRetakeTest} variant="outline" className="px-6">
               Retake Assessment
             </Button>
           </div>
