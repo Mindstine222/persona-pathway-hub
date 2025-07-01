@@ -12,8 +12,9 @@ import { ArrowRight, RotateCcw, Download, Calendar, User as UserIcon } from "luc
 interface AssessmentHistory {
   id: string;
   completed_at: string;
-  personality_type: string;
+  mbti_type: string;
   scores: any;
+  email: string;
 }
 
 const Dashboard = () => {
@@ -23,7 +24,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check authentication and load user data
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -33,8 +33,27 @@ const Dashboard = () => {
       }
 
       setUser(session.user);
-      // In a real implementation, you would fetch assessment history from database
-      // For now, we'll show a placeholder
+      
+      // Fetch assessment history for the authenticated user
+      if (session.user?.email) {
+        try {
+          const { data: assessments, error } = await supabase
+            .from('assessments')
+            .select('*')
+            .eq('email', session.user.email)
+            .order('completed_at', { ascending: false });
+
+          if (error) {
+            console.error('Error fetching assessments:', error);
+          } else {
+            console.log('Fetched assessments:', assessments);
+            setAssessmentHistory(assessments || []);
+          }
+        } catch (error) {
+          console.error('Error fetching assessment history:', error);
+        }
+      }
+      
       setIsLoading(false);
     };
 
@@ -136,7 +155,7 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Your Assessment History
+                  Your Assessment History ({assessmentHistory.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -163,7 +182,7 @@ const Dashboard = () => {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
                             <Badge className="text-lg px-3 py-1 bg-blue-100 text-blue-800">
-                              {assessment.personality_type}
+                              {assessment.mbti_type}
                             </Badge>
                             <div>
                               <p className="font-medium text-gray-900">
@@ -208,6 +227,16 @@ const Dashboard = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600">Email</label>
                   <p className="text-gray-900">{user?.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Verification Status</label>
+                  <p className="text-gray-900">
+                    {user?.email_confirmed_at ? (
+                      <span className="text-green-600">✓ Verified</span>
+                    ) : (
+                      <span className="text-red-600">⚠ Unverified</span>
+                    )}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Member since</label>
