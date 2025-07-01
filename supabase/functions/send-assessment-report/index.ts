@@ -31,9 +31,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Personality type:", personalityType);
 
     const emailResponse = await resend.emails.send({
-      from: "INTRA16 Assessment <info@duskydunes.com>",
+      from: "INTRA16 Assessment <noreply@duskydunes.com>",
       to: [email],
-      reply_to: "info@duskydunes.com",
+      reply_to: "support@duskydunes.com",
       subject: `Your INTRA16 Personality Assessment Results - ${personalityType}`,
       headers: {
         'X-Entity-Ref-ID': `assessment-${Date.now()}`,
