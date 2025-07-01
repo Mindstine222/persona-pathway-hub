@@ -93,9 +93,20 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
         }
       }
 
+      // Prepare data in the format expected by the edge function
+      const emailData = {
+        email: email,
+        name: email.split('@')[0], // Use part before @ as name
+        personalityType: result.type,
+        scores: result.scores,
+        insights: result.insights || []
+      };
+
+      console.log('Sending email data:', emailData);
+
       // Send email with results
       const { error: emailError } = await supabase.functions.invoke('send-assessment-report', {
-        body: { email, responses }
+        body: emailData
       });
 
       if (emailError) {
