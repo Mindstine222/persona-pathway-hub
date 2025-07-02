@@ -5,17 +5,26 @@ export interface ShuffledQuestion extends MBTIQuestion {
   originalIndex: number;
 }
 
-export const shuffleQuestions = (questions: MBTIQuestion[]): ShuffledQuestion[] => {
+// Seeded random number generator for consistent shuffling
+function seededRandom(seed: number) {
+  let x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+export const shuffleQuestions = (questions: MBTIQuestion[], seed: number = Math.random()): ShuffledQuestion[] => {
   // Create array with original indices
   const questionsWithIndices: ShuffledQuestion[] = questions.map((question, index) => ({
     ...question,
     originalIndex: index
   }));
 
-  // Fisher-Yates shuffle algorithm
+  // Fisher-Yates shuffle algorithm with seeded random
   const shuffled = [...questionsWithIndices];
+  let currentSeed = seed;
+  
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    currentSeed = seededRandom(currentSeed * 1000); // Generate next seed
+    const j = Math.floor(currentSeed * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 

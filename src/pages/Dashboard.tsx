@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import Navigation from "@/components/Navigation";
-import { ArrowRight, RotateCcw, Download, Calendar, User as UserIcon } from "lucide-react";
+import AssessmentResults from "@/components/AssessmentResults";
+import { ArrowRight, RotateCcw, Download, Calendar, User as UserIcon, Eye } from "lucide-react";
 
 interface AssessmentHistory {
   id: string;
@@ -23,6 +24,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedAssessment, setSelectedAssessment] = useState<AssessmentHistory | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,11 +41,32 @@ const Dashboard = () => {
       // Fetch assessment history for the authenticated user
       if (session.user?.email) {
         try {
-          const { data: assessments, error } = await supabase
+          // First try to get assessments by user_id
+          let { data: assessments, error } = await supabase
             .from('assessments')
             .select('*')
-            .eq('email', session.user.email)
+            .eq('user_id', session.user.id)
             .order('completed_at', { ascending: false });
+
+          // If no assessments found by user_id, try by email
+          if (!assessments || assessments.length === 0) {
+            const { data: emailAssessments, error: emailError } = await supabase
+              .from('assessments')
+              .select('*')
+              .eq('email', session.user.email)
+              .order('completed_at', { ascending: false });
+
+            if (!emailError && emailAssessments) {
+              // Update these assessments to link them to the user
+              for (const assessment of emailAssessments) {
+                await supabase
+                  .from('assessments')
+                  .update({ user_id: session.user.id })
+                  .eq('id', assessment.id);
+              }
+              assessments = emailAssessments;
+            }
+          }
 
           if (error) {
             console.error('Error fetching assessments:', error);
@@ -79,6 +102,14 @@ const Dashboard = () => {
     navigate("/assessment");
   };
 
+  const handleViewDetails = (assessment: AssessmentHistory) => {
+    setSelectedAssessment(assessment);
+  };
+
+  const handleBackToDashboard = () => {
+    setSelectedAssessment(null);
+  };
+
   const handleDownloadReport = (assessmentId: string) => {
     // Implementation for downloading specific report
     console.log("Downloading report for assessment:", assessmentId);
@@ -86,34 +117,65 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
         <Navigation />
         <div className="pt-20 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your dashboard...</p>
+            <p className="text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  // Show full assessment results if one is selected
+  if (selectedAssessment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
+        <Navigation />
+        <div className="pt-20 container mx-auto px-4 py-8">
+          <div className="mb-6">
+            <Button 
+              onClick={handleBackToDashboard}
+              variant="outline"
+              className="mb-4"
+            >
+              <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              Your Assessment Results
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Completed on {new Date(selectedAssessment.completed_at).toLocaleDateString()}
+            </p>
+          </div>
+          <AssessmentResults 
+            responses={selectedAssessment.responses} 
+            onRetakeTest={handleTakeAssessment}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
       <Navigation />
       
       <div className="pt-20 container mx-auto px-4 py-8">
         {/* Welcome Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-              <UserIcon className="w-8 h-8 text-blue-600" />
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+              <UserIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Welcome back{user?.user_metadata?.first_name ? `, ${user.user_metadata.first_name}` : ''}!
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
                 Manage your personality assessments and insights
               </p>
             </div>
@@ -124,9 +186,9 @@ const Dashboard = () => {
           {/* Main Actions */}
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Actions */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                   <span className="text-2xl">🎯</span>
                   Quick Actions
                 </CardTitle>
@@ -142,7 +204,7 @@ const Dashboard = () => {
                   </Button>
                   <Button 
                     variant="outline"
-                    className="h-24 border-gray-300 hover:bg-gray-50 flex flex-col items-center justify-center gap-2"
+                    className="h-24 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex flex-col items-center justify-center gap-2"
                     onClick={() => navigate("/assessment")}
                   >
                     <RotateCcw className="w-6 h-6" />
@@ -153,9 +215,9 @@ const Dashboard = () => {
             </Card>
 
             {/* Assessment History */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                   <Calendar className="w-5 h-5" />
                   Your Assessment History ({assessmentHistory.length})
                 </CardTitle>
@@ -163,13 +225,13 @@ const Dashboard = () => {
               <CardContent>
                 {assessmentHistory.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-2xl">📊</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                       No assessments yet
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
                       Take your first INTRA16 personality assessment to get started
                     </p>
                     <Button onClick={handleTakeAssessment} className="bg-blue-600 hover:bg-blue-700">
@@ -180,17 +242,17 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-4">
                     {assessmentHistory.map((assessment) => (
-                      <div key={assessment.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                      <div key={assessment.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <Badge className="text-lg px-3 py-1 bg-blue-100 text-blue-800">
+                            <Badge className="text-lg px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800">
                               {assessment.mbti_type}
                             </Badge>
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
                                 INTRA16 Assessment
                               </p>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Completed on {new Date(assessment.completed_at).toLocaleDateString()}
                               </p>
                             </div>
@@ -200,13 +262,19 @@ const Dashboard = () => {
                               variant="outline" 
                               size="sm"
                               onClick={() => handleDownloadReport(assessment.id)}
+                              className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                             >
                               <Download className="w-4 h-4 mr-1" />
                               Download
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleViewDetails(assessment)}
+                              className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/50"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
                               View Details
-                              <ArrowRight className="w-4 h-4 ml-1" />
                             </Button>
                           </div>
                         </div>
@@ -221,50 +289,50 @@ const Dashboard = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Account Info */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="text-lg">Account Information</CardTitle>
+                <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Account Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Email</label>
-                  <p className="text-gray-900">{user?.email}</p>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Email</label>
+                  <p className="text-gray-900 dark:text-gray-100">{user?.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Verification Status</label>
-                  <p className="text-gray-900">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Verification Status</label>
+                  <p className="text-gray-900 dark:text-gray-100">
                     {user?.email_confirmed_at ? (
-                      <span className="text-green-600">✓ Verified</span>
+                      <span className="text-green-600 dark:text-green-400">✓ Verified</span>
                     ) : (
-                      <span className="text-red-600">⚠ Unverified</span>
+                      <span className="text-red-600 dark:text-red-400">⚠ Unverified</span>
                     )}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Member since</label>
-                  <p className="text-gray-900">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Member since</label>
+                  <p className="text-gray-900 dark:text-gray-100">
                     {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Recently'}
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-4">
+                <Button variant="outline" size="sm" className="w-full mt-4 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
                   Edit Profile
                 </Button>
               </CardContent>
             </Card>
 
             {/* Help & Support */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="text-lg">Help & Support</CardTitle>
+                <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Help & Support</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="ghost" size="sm" className="w-full justify-start">
+                <Button variant="ghost" size="sm" className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                   📚 Assessment Guide
                 </Button>
-                <Button variant="ghost" size="sm" className="w-full justify-start">
+                <Button variant="ghost" size="sm" className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                   💬 Contact Support
                 </Button>
-                <Button variant="ghost" size="sm" className="w-full justify-start">
+                <Button variant="ghost" size="sm" className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                   🔒 Privacy Policy
                 </Button>
               </CardContent>
