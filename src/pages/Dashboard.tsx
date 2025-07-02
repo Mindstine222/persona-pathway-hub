@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import Navigation from "@/components/Navigation";
 import AssessmentResults from "@/components/AssessmentResults";
-import { ArrowRight, RotateCcw, Download, Calendar, User as UserIcon, Eye } from "lucide-react";
+import { ArrowRight, RotateCcw, Download, Calendar, User as UserIcon, Eye, Settings } from "lucide-react";
 
 interface AssessmentHistory {
   id: string;
@@ -25,7 +25,61 @@ const Dashboard = () => {
   const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentHistory | null>(null);
+  const [hasCurrentAssessment, setHasCurrentAssessment] = useState(false);
   const navigate = useNavigate();
+
+  const fetchAssessments = async (userId: string, userEmail: string) => {
+    try {
+      console.log('Fetching assessments for user:', userId, userEmail);
+      
+      // Try to get assessments by user_id first
+      let { data: assessments, error } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('user_id', userId)
+        .order('completed_at', { ascending: false });
+
+      console.log('Assessments by user_id:', assessments, error);
+
+      // If no assessments found by user_id, try by email
+      if (!assessments || assessments.length === 0) {
+        console.log('No assessments found by user_id, trying by email...');
+        const { data: emailAssessments, error: emailError } = await supabase
+          .from('assessments')
+          .select('*')
+          .eq('email', userEmail)
+          .order('completed_at', { ascending: false });
+
+        console.log('Assessments by email:', emailAssessments, emailError);
+
+        if (!emailError && emailAssessments && emailAssessments.length > 0) {
+          // Update these assessments to link them to the user
+          for (const assessment of emailAssessments) {
+            const { error: updateError } = await supabase
+              .from('assessments')
+              .update({ user_id: userId })
+              .eq('id', assessment.id);
+            
+            if (updateError) {
+              console.error('Error updating assessment user_id:', updateError);
+            }
+          }
+          assessments = emailAssessments;
+        }
+      }
+
+      if (error && !assessments) {
+        console.error('Error fetching assessments:', error);
+        return [];
+      }
+
+      console.log('Final assessments:', assessments);
+      return assessments || [];
+    } catch (error) {
+      console.error('Error in fetchAssessments:', error);
+      return [];
+    }
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -37,46 +91,13 @@ const Dashboard = () => {
       }
 
       setUser(session.user);
+      console.log('Current user:', session.user);
       
       // Fetch assessment history for the authenticated user
       if (session.user?.email) {
-        try {
-          // First try to get assessments by user_id
-          let { data: assessments, error } = await supabase
-            .from('assessments')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .order('completed_at', { ascending: false });
-
-          // If no assessments found by user_id, try by email
-          if (!assessments || assessments.length === 0) {
-            const { data: emailAssessments, error: emailError } = await supabase
-              .from('assessments')
-              .select('*')
-              .eq('email', session.user.email)
-              .order('completed_at', { ascending: false });
-
-            if (!emailError && emailAssessments) {
-              // Update these assessments to link them to the user
-              for (const assessment of emailAssessments) {
-                await supabase
-                  .from('assessments')
-                  .update({ user_id: session.user.id })
-                  .eq('id', assessment.id);
-              }
-              assessments = emailAssessments;
-            }
-          }
-
-          if (error) {
-            console.error('Error fetching assessments:', error);
-          } else {
-            console.log('Fetched assessments:', assessments);
-            setAssessmentHistory(assessments || []);
-          }
-        } catch (error) {
-          console.error('Error fetching assessment history:', error);
-        }
+        const assessments = await fetchAssessments(session.user.id, session.user.email);
+        setAssessmentHistory(assessments);
+        setHasCurrentAssessment(assessments.length > 0);
       }
       
       setIsLoading(false);
@@ -113,6 +134,11 @@ const Dashboard = () => {
   const handleDownloadReport = (assessmentId: string) => {
     // Implementation for downloading specific report
     console.log("Downloading report for assessment:", assessmentId);
+  };
+
+  const handleEditProfile = () => {
+    // TODO: Implement profile editing functionality
+    console.log("Edit profile functionality to be implemented");
   };
 
   if (isLoading) {
@@ -200,7 +226,7 @@ const Dashboard = () => {
                     className="h-24 bg-blue-600 hover:bg-blue-700 text-white flex flex-col items-center justify-center gap-2"
                   >
                     <span className="text-2xl">📋</span>
-                    <span>Take New Assessment</span>
+                    <span>{hasCurrentAssessment ? 'View Current Assessment' : 'Take New Assessment'}</span>
                   </Button>
                   <Button 
                     variant="outline"
@@ -314,7 +340,13 @@ const Dashboard = () => {
                     {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Recently'}
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-4 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-4 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={handleEditProfile}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
                   Edit Profile
                 </Button>
               </CardContent>

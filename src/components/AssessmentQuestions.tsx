@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,9 +10,10 @@ import { shuffleQuestions, mapShuffledResponsesToOriginalOrder, ShuffledQuestion
 
 interface AssessmentQuestionsProps {
   onComplete: (responses: number[]) => void;
+  shuffleSeed?: number;
 }
 
-const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
+const AssessmentQuestions = ({ onComplete, shuffleSeed }: AssessmentQuestionsProps) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<number[]>(new Array(93).fill(0));
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -21,9 +21,9 @@ const AssessmentQuestions = ({ onComplete }: AssessmentQuestionsProps) => {
 
   // Initialize shuffled questions on component mount
   useEffect(() => {
-    const shuffled = shuffleQuestions(mbtiQuestions);
+    const shuffled = shuffleQuestions(mbtiQuestions, shuffleSeed);
     setShuffledQuestions(shuffled);
-  }, []);
+  }, [shuffleSeed]);
 
   const handleAnswerSelect = (value: string) => {
     const newResponses = [...responses];

@@ -41,30 +41,39 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
       
       try {
         const result = calculateMBTIType(responses);
+        console.log('Saving assessment with result:', result);
+        console.log('Current user:', currentUser);
         
-        const { error } = await supabase
+        const assessmentData = {
+          email: currentUser?.email || email || null,
+          responses: responses,
+          mbti_type: result.type,
+          user_id: currentUser?.id || null,
+          results_sent: false
+        };
+
+        console.log('Assessment data to save:', assessmentData);
+        
+        const { data, error } = await supabase
           .from('assessments')
-          .insert([{
-            email: currentUser?.email || null,
-            responses: responses,
-            mbti_type: result.type,
-            user_id: currentUser?.id || null,
-            results_sent: false
-          }]);
+          .insert([assessmentData])
+          .select();
 
         if (error) {
           console.error('Error saving assessment:', error);
         } else {
           setAssessmentSaved(true);
-          console.log('Assessment saved successfully');
+          console.log('Assessment saved successfully:', data);
         }
       } catch (error) {
         console.error('Error saving assessment:', error);
       }
     };
 
-    saveAssessment();
-  }, [responses, assessmentSaved, currentUser]);
+    if (responses && responses.length > 0) {
+      saveAssessment();
+    }
+  }, [responses, assessmentSaved, currentUser, email]);
 
   const handleSendReport = async () => {
     if (!email) {
@@ -81,29 +90,61 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
       // Calculate result
       const result = calculateMBTIType(responses);
 
-      // Generate personalized insights
+      // Generate dynamic personalized insights based on actual scores
       const generatePersonalizedInsights = () => {
         const insights = [];
         const type = result.type;
         const scores = result.scores;
 
-        // Energy Direction Insights
+        // Energy Direction Insights - based on actual E/I scores
         const energyGap = Math.abs(scores.E - scores.I);
         if (type[0] === 'E') {
           if (energyGap > 30) {
-            insights.push("You have a very clear preference for Extraversion. You likely feel most energized when interacting with others and may find isolation draining.");
+            insights.push(`You have a very clear preference for Extraversion (${scores.E}% vs ${scores.I}%). You likely feel most energized when interacting with others and may find isolation draining. Your energy comes from external engagement and social interaction.`);
           } else if (energyGap > 15) {
-            insights.push("While you prefer Extraversion, you also have some comfort with Introversion. This flexibility allows you to adapt to both social and solitary work situations effectively.");
+            insights.push(`While you prefer Extraversion (${scores.E}% vs ${scores.I}%), you also have some comfort with Introversion. This flexibility allows you to adapt to both social and solitary work situations effectively, making you versatile in different environments.`);
           } else {
-            insights.push("Your energy preference is quite balanced. You can draw energy from both social interaction and quiet reflection, making you adaptable to various work environments.");
+            insights.push(`Your energy preference is quite balanced (${scores.E}% Extraversion vs ${scores.I}% Introversion). You can draw energy from both social interaction and quiet reflection, making you adaptable to various work environments and social situations.`);
           }
         } else {
           if (energyGap > 30) {
-            insights.push("You have a clear preference for Introversion. You likely do your best thinking in quiet environments and may need time alone to recharge after social interactions.");
+            insights.push(`You have a clear preference for Introversion (${scores.I}% vs ${scores.E}%). You likely do your best thinking in quiet environments and may need time alone to recharge after social interactions. Deep reflection and internal processing are your strengths.`);
           } else if (energyGap > 15) {
-            insights.push("While you prefer Introversion, you can also engage effectively in social situations. This balance allows you to contribute thoughtfully in groups while maintaining your need for reflection.");
+            insights.push(`While you prefer Introversion (${scores.I}% vs ${scores.E}%), you can also engage effectively in social situations. This balance allows you to contribute thoughtfully in groups while maintaining your need for reflection and internal processing.`);
           } else {
-            insights.push("Your energy preference is quite balanced. You can draw energy from both quiet reflection and social interaction, giving you versatility in different situations.");
+            insights.push(`Your energy preference is quite balanced (${scores.I}% Introversion vs ${scores.E}% Extraversion). You can draw energy from both quiet reflection and social interaction, giving you versatility in different situations and environments.`);
+          }
+        }
+
+        // Information Processing Insights - based on actual S/N scores
+        const infoGap = Math.abs(scores.S - scores.N);
+        if (type[1] === 'S') {
+          if (infoGap > 25) {
+            insights.push(`Your strong Sensing preference (${scores.S}% vs ${scores.N}%) means you excel at focusing on concrete details and practical realities. You prefer working with established facts and proven methods, making you reliable in implementing practical solutions.`);
+          } else {
+            insights.push(`Your moderate Sensing preference (${scores.S}% vs ${scores.N}%) allows you to balance attention to practical details with occasional big-picture thinking. You can work effectively with both concrete facts and abstract concepts when needed.`);
+          }
+        } else {
+          if (infoGap > 25) {
+            insights.push(`Your strong Intuitive preference (${scores.N}% vs ${scores.S}%) means you naturally focus on possibilities and future potential. You excel at seeing patterns and connections that others might miss, making you valuable for innovation and strategic thinking.`);
+          } else {
+            insights.push(`Your moderate Intuitive preference (${scores.N}% vs ${scores.S}%) gives you the ability to see both immediate realities and future possibilities. You can balance practical implementation with creative vision effectively.`);
+          }
+        }
+
+        // Decision Making Insights - based on actual T/F scores
+        const decisionGap = Math.abs(scores.T - scores.F);
+        if (type[2] === 'T') {
+          if (decisionGap > 25) {
+            insights.push(`Your strong Thinking preference (${scores.T}% vs ${scores.F}%) indicates you naturally prioritize logic and objective analysis in decision-making. You excel at identifying flaws in reasoning and making impartial judgments based on facts and principles.`);
+          } else {
+            insights.push(`Your moderate Thinking preference (${scores.T}% vs ${scores.F}%) means you can balance logical analysis with consideration of human factors. You're able to make decisions that are both rational and considerate of people's needs.`);
+          }
+        } else {
+          if (decisionGap > 25) {
+            insights.push(`Your strong Feeling preference (${scores.F}% vs ${scores.T}%) shows you naturally consider the human impact of decisions. You excel at understanding people's motivations and creating harmony, making you valuable in team environments and people-focused roles.`);
+          } else {
+            insights.push(`Your moderate Feeling preference (${scores.F}% vs ${scores.T}%) allows you to consider both logical factors and human impact in decisions. You can balance analytical thinking with empathy and personal values effectively.`);
           }
         }
 
@@ -111,31 +152,6 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
       };
 
       const insights = generatePersonalizedInsights();
-
-      // Store or update assessment in database with email
-      const { error: dbError } = await supabase
-        .from('assessments')
-        .insert([{
-          email: email,
-          responses: responses,
-          mbti_type: result.type,
-          user_id: currentUser?.id || null
-        }]);
-
-      if (dbError) {
-        console.error('Database error:', dbError);
-        // If insert fails due to duplicate, try update
-        const { error: updateError } = await supabase
-          .from('assessments')
-          .update({ email: email, results_sent: false })
-          .eq('responses', JSON.stringify(responses))
-          .eq('mbti_type', result.type);
-        
-        if (updateError) {
-          console.error('Update error:', updateError);
-          throw new Error('Failed to save assessment');
-        }
-      }
 
       // Prepare data in the format expected by the edge function
       const emailData = {
@@ -156,6 +172,17 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
       if (emailError) {
         console.error('Email function error:', emailError);
         throw new Error('Failed to send email. Please check if RESEND_API_KEY is configured');
+      }
+
+      // Update the assessment record to mark results as sent
+      if (currentUser?.id) {
+        await supabase
+          .from('assessments')
+          .update({ results_sent: true })
+          .eq('user_id', currentUser.id)
+          .eq('mbti_type', result.type)
+          .order('completed_at', { ascending: false })
+          .limit(1);
       }
 
       setEmailSent(true);
@@ -194,6 +221,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
             <ul className="text-left text-blue-800 dark:text-blue-300 space-y-1">
               <li>• Your complete personality type</li>
               <li>• Detailed analysis of your preferences</li>
+              <li>• Personalized insights based on your scores</li>
               <li>• Strength and development areas</li>
               <li>• Career recommendations</li>
               <li>• Communication and relationship insights</li>
@@ -202,7 +230,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
             <p className="text-amber-800 dark:text-amber-300 text-sm">
-              <strong>Note:</strong> Your assessment has been saved. Enter your email below to receive your detailed results report.
+              <strong>Note:</strong> Your assessment has been saved{currentUser ? ' to your account' : ''}. Enter your email below to receive your detailed results report.
             </p>
           </div>
 
