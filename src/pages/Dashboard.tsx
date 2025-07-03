@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import Navigation from "@/components/Navigation";
 import AssessmentResults from "@/components/AssessmentResults";
+import EditProfile from "@/components/EditProfile";
 import { ArrowRight, RotateCcw, Download, Calendar, User as UserIcon, Eye, Settings } from "lucide-react";
+import { linkAssessmentsToUser } from "@/utils/assessmentLinker";
 
 interface AssessmentHistory {
   id: string;
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentHistory | null>(null);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const [hasCurrentAssessment, setHasCurrentAssessment] = useState(false);
   const navigate = useNavigate();
 
@@ -32,43 +34,17 @@ const Dashboard = () => {
     try {
       console.log('Fetching assessments for user:', userId, userEmail);
       
-      // Try to get assessments by user_id first
-      let { data: assessments, error } = await supabase
+      // First, try to link any unlinked assessments
+      await linkAssessmentsToUser(userId, userEmail);
+      
+      // Then fetch all assessments for this user
+      const { data: assessments, error } = await supabase
         .from('assessments')
         .select('*')
         .eq('user_id', userId)
         .order('completed_at', { ascending: false });
 
-      console.log('Assessments by user_id:', assessments, error);
-
-      // If no assessments found by user_id, try by email
-      if (!assessments || assessments.length === 0) {
-        console.log('No assessments found by user_id, trying by email...');
-        const { data: emailAssessments, error: emailError } = await supabase
-          .from('assessments')
-          .select('*')
-          .eq('email', userEmail)
-          .order('completed_at', { ascending: false });
-
-        console.log('Assessments by email:', emailAssessments, emailError);
-
-        if (!emailError && emailAssessments && emailAssessments.length > 0) {
-          // Update these assessments to link them to the user
-          for (const assessment of emailAssessments) {
-            const { error: updateError } = await supabase
-              .from('assessments')
-              .update({ user_id: userId })
-              .eq('id', assessment.id);
-            
-            if (updateError) {
-              console.error('Error updating assessment user_id:', updateError);
-            }
-          }
-          assessments = emailAssessments;
-        }
-      }
-
-      if (error && !assessments) {
+      if (error) {
         console.error('Error fetching assessments:', error);
         return [];
       }
@@ -93,7 +69,6 @@ const Dashboard = () => {
       setUser(session.user);
       console.log('Current user:', session.user);
       
-      // Fetch assessment history for the authenticated user
       if (session.user?.email) {
         const assessments = await fetchAssessments(session.user.id, session.user.email);
         setAssessmentHistory(assessments);
@@ -105,7 +80,6 @@ const Dashboard = () => {
 
     checkAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!session) {
@@ -129,16 +103,15 @@ const Dashboard = () => {
 
   const handleBackToDashboard = () => {
     setSelectedAssessment(null);
+    setShowEditProfile(false);
   };
 
   const handleDownloadReport = (assessmentId: string) => {
-    // Implementation for downloading specific report
     console.log("Downloading report for assessment:", assessmentId);
   };
 
   const handleEditProfile = () => {
-    // TODO: Implement profile editing functionality
-    console.log("Edit profile functionality to be implemented");
+    setShowEditProfile(true);
   };
 
   if (isLoading) {
@@ -155,7 +128,6 @@ const Dashboard = () => {
     );
   }
 
-  // Show full assessment results if one is selected
   if (selectedAssessment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
@@ -186,6 +158,17 @@ const Dashboard = () => {
     );
   }
 
+  if (showEditProfile && user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
+        <Navigation />
+        <div className="pt-20 container mx-auto px-4 py-8">
+          <EditProfile user={user} onBack={handleBackToDashboard} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
       <Navigation />
@@ -209,7 +192,6 @@ const Dashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Actions */}
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Actions */}
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">

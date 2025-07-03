@@ -11,199 +11,263 @@ const corsHeaders = {
 
 interface AssessmentReportRequest {
   email: string;
-  name: string;
-  personalityType: string;
-  scores: any;
-  insights: string[];
+  name?: string;
+  mbtiType: string;
+  reportUrl: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Assessment report function called");
-
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { email, name, personalityType, scores, insights }: AssessmentReportRequest = await req.json();
-    
-    console.log("Sending assessment report to:", email);
-    console.log("Personality type:", personalityType);
+    const { email, name, mbtiType, reportUrl }: AssessmentReportRequest = await req.json();
+
+    const modernEmailTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your INTRA16 Assessment Results</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .email-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+        }
+        .brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .tagline {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        .description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+        .mbti-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+        }
+        .features {
+            margin: 32px 0;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #374151;
+        }
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 12px;
+            color: white;
+        }
+        .footer {
+            background: #f9fafb;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer-text {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        .social-links {
+            margin-top: 20px;
+        }
+        .social-link {
+            display: inline-block;
+            margin: 0 8px;
+            color: #6b7280;
+            text-decoration: none;
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+            margin: 32px 0;
+        }
+        @media (max-width: 600px) {
+            .email-container { padding: 20px 10px; }
+            .header, .content { padding: 30px 20px; }
+            .greeting { font-size: 20px; }
+            .cta-button { display: block; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-card">
+            <div class="header">
+                <div class="logo">I</div>
+                <div class="brand-name">INTRA16</div>
+                <div class="tagline">Discover Your True Personality</div>
+            </div>
+            
+            <div class="content">
+                <div class="greeting">
+                    🎉 Congratulations${name ? `, ${name}` : ''}!
+                </div>
+                
+                <div class="description">
+                    Your INTRA16 personality assessment is complete! We've analyzed your responses and generated a comprehensive personality report tailored specifically for you.
+                </div>
+                
+                <div style="text-align: center;">
+                    <div class="mbti-badge">${mbtiType}</div>
+                </div>
+                
+                <div class="features">
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Detailed personality breakdown and insights
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Strengths and growth opportunities
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Career and relationship guidance
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Communication style analysis
+                        </li>
+                    </ul>
+                </div>
+                
+                <div style="text-align: center;">
+                    <a href="${reportUrl}" class="cta-button">
+                        📊 View Your Complete Report
+                    </a>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div style="background: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; padding: 16px; margin: 20px 0;">
+                    <div style="color: #92400e; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                        💡 Pro Tip
+                    </div>
+                    <div style="color: #78350f; font-size: 14px; line-height: 1.5;">
+                        Your personality type is just the beginning. The real value lies in understanding how to leverage your strengths and develop your potential areas for growth.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <div class="footer-text">
+                    This report was generated by INTRA16 - Advanced Personality Assessment Platform
+                </div>
+                <div class="footer-text">
+                    Questions? Reply to this email or visit our support center.
+                </div>
+                <div style="margin-top: 20px; font-size: 12px; color: #9ca3af;">
+                    INTRA16 by Linked Up Consulting | Discover Your Potential
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
 
     const emailResponse = await resend.emails.send({
-      from: "INTRA16 Assessment <info@duskydunes.com>",
+      from: "INTRA16 <info@duskydunes.com>",
       to: [email],
-      reply_to: "info@duskydunes.com",
-      subject: `Your INTRA16 Personality Assessment Results - ${personalityType}`,
-      headers: {
-        'X-Entity-Ref-ID': `assessment-${Date.now()}`,
-        'X-Priority': '1',
-      },
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Your INTRA16 Assessment Results</title>
-          <style>
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-              line-height: 1.6; 
-              color: #333; 
-              max-width: 600px; 
-              margin: 0 auto; 
-              padding: 20px;
-              background-color: #f8fafc;
-            }
-            .header { 
-              background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%); 
-              color: white; 
-              padding: 30px; 
-              text-align: center; 
-              border-radius: 12px 12px 0 0;
-            }
-            .content { 
-              background: white; 
-              padding: 30px; 
-              border-radius: 0 0 12px 12px;
-              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            }
-            .personality-badge { 
-              background: #3B82F6; 
-              color: white; 
-              padding: 12px 24px; 
-              border-radius: 8px; 
-              font-size: 24px; 
-              font-weight: bold; 
-              display: inline-block; 
-              margin: 20px 0;
-            }
-            .scores-section { 
-              background: #F1F5F9; 
-              padding: 20px; 
-              border-radius: 8px; 
-              margin: 20px 0; 
-            }
-            .score-item { 
-              display: flex; 
-              justify-content: space-between; 
-              align-items: center; 
-              padding: 10px 0; 
-              border-bottom: 1px solid #E2E8F0;
-            }
-            .score-item:last-child { border-bottom: none; }
-            .insights-section { 
-              background: #FEF3C7; 
-              border: 1px solid #F59E0B; 
-              padding: 20px; 
-              border-radius: 8px; 
-              margin: 20px 0; 
-            }
-            .insight-item { 
-              margin: 15px 0; 
-              padding: 10px 0; 
-            }
-            .cta-button { 
-              background: #3B82F6; 
-              color: white; 
-              padding: 15px 30px; 
-              text-decoration: none; 
-              border-radius: 8px; 
-              display: inline-block; 
-              font-weight: bold; 
-              margin: 20px 0;
-            }
-            .footer { 
-              text-align: center; 
-              color: #64748B; 
-              font-size: 14px; 
-              margin-top: 30px; 
-              padding: 20px; 
-              border-top: 1px solid #E2E8F0;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>🎯 Your INTRA16 Personality Assessment Results</h1>
-            <p>Discover insights about your unique personality type</p>
-          </div>
-          
-          <div class="content">
-            <h2>Hello ${name || 'Assessment Taker'}!</h2>
-            
-            <p>Congratulations on completing your INTRA16 personality assessment! Your results reveal fascinating insights about your personality preferences and behavioral tendencies.</p>
-            
-            <div style="text-align: center;">
-              <div class="personality-badge">${personalityType}</div>
-            </div>
-            
-            <div class="scores-section">
-              <h3>📊 Your Personality Preference Scores</h3>
-              <div class="score-item">
-                <span><strong>Energy Direction:</strong></span>
-                <span>${scores.E > scores.I ? 'Extraverted' : 'Introverted'} (${Math.round((Math.max(scores.E, scores.I) / (scores.E + scores.I)) * 100)}%)</span>
-              </div>
-              <div class="score-item">
-                <span><strong>Information Processing:</strong></span>
-                <span>${scores.S > scores.N ? 'Observant' : 'Intuitive'} (${Math.round((Math.max(scores.S, scores.N) / (scores.S + scores.N)) * 100)}%)</span>
-              </div>
-              <div class="score-item">
-                <span><strong>Decision Making:</strong></span>
-                <span>${scores.T > scores.F ? 'Thinking' : 'Feeling'} (${Math.round((Math.max(scores.T, scores.F) / (scores.T + scores.F)) * 100)}%)</span>
-              </div>
-              <div class="score-item">
-                <span><strong>Lifestyle Approach:</strong></span>
-                <span>${scores.J > scores.P ? 'Judging' : 'Prospecting'} (${Math.round((Math.max(scores.J, scores.P) / (scores.J + scores.P)) * 100)}%)</span>
-              </div>
-            </div>
-            
-            ${insights && insights.length > 0 ? `
-            <div class="insights-section">
-              <h3>💡 Key Insights About Your Personality</h3>
-              ${insights.map(insight => `<div class="insight-item">• ${insight}</div>`).join('')}
-            </div>
-            ` : ''}
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="https://duskydunes.com/dashboard" class="cta-button">
-                View Your Complete Report
-              </a>
-            </div>
-            
-            <div style="background: #EFF6FF; padding: 20px; border-radius: 8px; border-left: 4px solid #3B82F6;">
-              <h4>🚀 What's Next?</h4>
-              <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Log in to your dashboard to access your complete personality profile</li>
-                <li>Download your detailed PDF report with career suggestions</li>
-                <li>Explore personalized development recommendations</li>
-                <li>Share your results with friends and colleagues</li>
-              </ul>
-            </div>
-            
-            <p><strong>Remember:</strong> Your personality type is just one lens through which to understand yourself. Use these insights as a starting point for personal growth and self-awareness.</p>
-          </div>
-          
-          <div class="footer">
-            <p>This assessment was powered by <strong>INTRA16</strong> - Advanced Personality Insights</p>
-            <p>Questions? Contact us at <a href="mailto:info@duskydunes.com">info@duskydunes.com</a></p>
-            <p style="font-size: 12px; color: #94A3B8;">
-              You're receiving this email because you completed a personality assessment on our platform.
-            </p>
-          </div>
-        </body>
-        </html>
-      `,
+      subject: `🎉 Your ${mbtiType} Personality Report is Ready!`,
+      html: modernEmailTemplate,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Assessment report email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      messageId: emailResponse.data?.id,
-      message: "Assessment report sent successfully"
-    }), {
+    return new Response(JSON.stringify(emailResponse), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -211,12 +275,9 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error in send-assessment-report function:", error);
+    console.error("Error in send-assessment-report:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: "Failed to send assessment report email"
-      }),
+      JSON.stringify({ error: error.message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

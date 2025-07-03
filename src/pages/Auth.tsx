@@ -9,9 +9,12 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import ForgotPassword from "@/components/ForgotPassword";
+import { linkAssessmentsToUser } from "@/utils/assessmentLinker";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -38,14 +41,16 @@ const Auth = () => {
             variant: "destructive",
           });
         } else if (data.user && !data.user.email_confirmed_at) {
-          // User exists but email is not verified
-          await supabase.auth.signOut(); // Sign them out immediately
+          await supabase.auth.signOut();
           toast({
             title: "Email verification required",
             description: "Please verify your email to access your dashboard. Check your inbox for the verification link.",
             variant: "destructive",
           });
-        } else {
+        } else if (data.user) {
+          // Link any existing assessments to this user
+          await linkAssessmentsToUser(data.user.id, data.user.email!);
+          
           toast({
             title: "Welcome back!",
             description: "You have successfully logged in.",
@@ -53,7 +58,6 @@ const Auth = () => {
           navigate("/dashboard");
         }
       } else {
-        // Use production domain for email redirect
         const redirectUrl = window.location.hostname === 'localhost' 
           ? `${window.location.origin}/dashboard`
           : 'https://duskydunes.com/dashboard';
@@ -71,7 +75,6 @@ const Auth = () => {
         });
 
         if (error) {
-          // Check if it's a user already registered error
           if (error.message.includes("already registered") || 
               error.message.includes("already been registered") ||
               error.message.includes("User already registered")) {
@@ -88,13 +91,14 @@ const Auth = () => {
             });
           }
         } else if (data.user && !data.session) {
-          // User created but needs email confirmation
           toast({
             title: "Account created!",
             description: "Please check your email to verify your account. You'll be redirected to your dashboard after verification.",
           });
         } else if (data.user && data.session) {
-          // User was created and automatically signed in (email confirmation disabled)
+          // Link any existing assessments to this user
+          await linkAssessmentsToUser(data.user.id, data.user.email!);
+          
           toast({
             title: "Account created!",
             description: "Welcome to INTRA16!",
@@ -112,6 +116,22 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-900 dark:via-gray-900 dark:to-indigo-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="mb-6">
+            <Link to="/" className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
+          </div>
+          <ForgotPassword onBack={() => setShowForgotPassword(false)} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-900 dark:via-gray-900 dark:to-indigo-900 flex items-center justify-center p-4">
@@ -183,7 +203,19 @@ const Auth = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">Password</Label>
+                  {isLogin && (
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="p-0 h-auto text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                      onClick={() => setShowForgotPassword(true)}
+                    >
+                      Forgot password?
+                    </Button>
+                  )}
+                </div>
                 <Input
                   id="password"
                   type="password"
