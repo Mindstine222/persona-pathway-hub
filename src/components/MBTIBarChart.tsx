@@ -126,8 +126,11 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
                   />
                 </div>
                 
-                {/* Center indicator */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                {/* Center indicator - positioned based on actual percentage */}
+                <div 
+                  className="absolute top-1/2 transform -translate-y-1/2 transition-all duration-700 ease-out"
+                  style={{ left: `${leftPercentage}%`, transform: 'translateX(-50%) translateY(-50%)' }}
+                >
                   <div className="w-5 h-5 bg-white dark:bg-gray-800 rounded-full border-2 border-gray-300 dark:border-gray-600 shadow-md flex items-center justify-center">
                     <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></div>
                   </div>

@@ -13,7 +13,7 @@ interface AssessmentReportRequest {
   email: string;
   name?: string;
   mbtiType: string;
-  reportUrl: string;
+  reportUrl?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,6 +23,10 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { email, name, mbtiType, reportUrl }: AssessmentReportRequest = await req.json();
+
+    // Create a proper report URL - using the current domain
+    const baseUrl = "https://9d5b87ca-86b8-42d3-bcfa-41f4bfd0f0e9.lovableproject.com";
+    const finalReportUrl = reportUrl || `${baseUrl}/dashboard`;
 
     const modernEmailTemplate = `
 <!DOCTYPE html>
@@ -225,7 +229,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 
                 <div style="text-align: center;">
-                    <a href="${reportUrl}" class="cta-button">
+                    <a href="${finalReportUrl}" class="cta-button">
                         📊 View Your Complete Report
                     </a>
                 </div>

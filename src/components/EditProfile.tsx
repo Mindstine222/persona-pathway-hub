@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -18,6 +19,10 @@ interface Profile {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  birthdate: string | null;
+  gender: string | null;
+  location: string | null;
+  contact_number: string | null;
   updated_at: string | null;
 }
 
@@ -25,6 +30,10 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState(user.email || "");
+  const [birthdate, setBirthdate] = useState("");
+  const [gender, setGender] = useState("");
+  const [location, setLocation] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const { toast } = useToast();
@@ -54,6 +63,10 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
       if (profile) {
         setFirstName(profile.first_name || "");
         setLastName(profile.last_name || "");
+        setBirthdate(profile.birthdate || "");
+        setGender(profile.gender || "");
+        setLocation(profile.location || "");
+        setContactNumber(profile.contact_number || "");
       } else {
         // No profile exists, use metadata from auth
         setFirstName(user.user_metadata?.first_name || "");
@@ -78,6 +91,10 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
           id: user.id,
           first_name: firstName,
           last_name: lastName,
+          birthdate: birthdate || null,
+          gender: gender || null,
+          location: location || null,
+          contact_number: contactNumber || null,
         });
 
       if (profileError) {
@@ -125,7 +142,7 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
   }
 
   return (
-    <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-2xl">
+    <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-4xl">
       <CardHeader>
         <div className="flex items-center gap-4">
           <Button 
@@ -183,6 +200,66 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Email address cannot be changed. Contact support if you need to update your email.
             </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="birthdate" className="text-gray-700 dark:text-gray-300">
+                Date of Birth
+              </Label>
+              <Input
+                id="birthdate"
+                type="date"
+                value={birthdate}
+                onChange={(e) => setBirthdate(e.target.value)}
+                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300">
+                Gender (Optional)
+              </Label>
+              <Select value={gender} onValueChange={setGender}>
+                <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Prefer not to say</SelectItem>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="non-binary">Non-binary</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="location" className="text-gray-700 dark:text-gray-300">
+                Location / Country
+              </Label>
+              <Input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Enter your location"
+                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contactNumber" className="text-gray-700 dark:text-gray-300">
+                Contact Number
+              </Label>
+              <Input
+                id="contactNumber"
+                type="tel"
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
+                placeholder="Enter your contact number"
+                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+              />
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
