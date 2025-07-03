@@ -24,8 +24,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, name, mbtiType, reportUrl }: AssessmentReportRequest = await req.json();
 
-    // Create a proper report URL - using the current domain
-    const baseUrl = "https://9d5b87ca-86b8-42d3-bcfa-41f4bfd0f0e9.lovableproject.com";
+    console.log('Assessment report request:', { email, name, mbtiType, reportUrl });
+
+    // Use the correct custom domain
+    const baseUrl = "https://duskydunes.com";
     const finalReportUrl = reportUrl || `${baseUrl}/dashboard`;
 
     const modernEmailTemplate = `
@@ -204,7 +206,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 
                 <div style="text-align: center;">
-                    <div class="mbti-badge">${mbtiType}</div>
+                    <div class="mbti-badge">${mbtiType || 'Your Personality Type'}</div>
                 </div>
                 
                 <div class="features">
@@ -265,7 +267,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "INTRA16 <info@duskydunes.com>",
       to: [email],
-      subject: `🎉 Your ${mbtiType} Personality Report is Ready!`,
+      subject: `🎉 Your ${mbtiType || 'Personality'} Report is Ready!`,
       html: modernEmailTemplate,
     });
 

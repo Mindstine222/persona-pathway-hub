@@ -35,7 +35,10 @@ const Dashboard = () => {
       console.log('Fetching assessments for user:', userId, userEmail);
       
       // First, try to link any unlinked assessments
-      await linkAssessmentsToUser(userId, userEmail);
+      const linkedCount = await linkAssessmentsToUser(userId, userEmail);
+      if (linkedCount > 0) {
+        console.log(`Linked ${linkedCount} previous assessments to user account`);
+      }
       
       // Then fetch all assessments for this user
       const { data: assessments, error } = await supabase
@@ -81,11 +84,17 @@ const Dashboard = () => {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (!session) {
           navigate("/auth");
         } else {
           setUser(session.user);
+          // Re-fetch assessments when user auth state changes
+          if (session.user?.email) {
+            const assessments = await fetchAssessments(session.user.id, session.user.email);
+            setAssessmentHistory(assessments);
+            setHasCurrentAssessment(assessments.length > 0);
+          }
         }
       }
     );

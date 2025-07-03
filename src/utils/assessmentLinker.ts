@@ -14,15 +14,17 @@ export const linkAssessmentsToUser = async (userId: string, userEmail: string) =
 
     if (fetchError) {
       console.error('Error fetching unlinked assessments:', fetchError);
-      return;
+      return 0;
     }
 
     if (!unlinkedAssessments || unlinkedAssessments.length === 0) {
       console.log('No unlinked assessments found for this email');
-      return;
+      return 0;
     }
 
     console.log(`Found ${unlinkedAssessments.length} unlinked assessments to link`);
+
+    let linkedCount = 0;
 
     // Update each assessment to link it to the user
     for (const assessment of unlinkedAssessments) {
@@ -35,11 +37,14 @@ export const linkAssessmentsToUser = async (userId: string, userEmail: string) =
         console.error('Error linking assessment:', assessment.id, updateError);
       } else {
         console.log('Successfully linked assessment:', assessment.id);
+        linkedCount++;
       }
     }
 
-    return unlinkedAssessments.length;
+    console.log(`Successfully linked ${linkedCount} assessments`);
+    return linkedCount;
   } catch (error) {
     console.error('Error in linkAssessmentsToUser:', error);
+    return 0;
   }
 };

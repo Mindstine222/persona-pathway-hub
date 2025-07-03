@@ -31,7 +31,7 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState(user.email || "");
   const [birthdate, setBirthdate] = useState("");
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState<string | undefined>(undefined);
   const [location, setLocation] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -64,7 +64,7 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
         setFirstName(profile.first_name || "");
         setLastName(profile.last_name || "");
         setBirthdate(profile.birthdate || "");
-        setGender(profile.gender || "");
+        setGender(profile.gender || undefined);
         setLocation(profile.location || "");
         setContactNumber(profile.contact_number || "");
       } else {
@@ -219,12 +219,12 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
               <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300">
                 Gender (Optional)
               </Label>
-              <Select value={gender} onValueChange={setGender}>
+              <Select value={gender} onValueChange={(value) => setGender(value === "prefer-not-to-say" ? undefined : value)}>
                 <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Prefer not to say</SelectItem>
+                  <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="non-binary">Non-binary</SelectItem>

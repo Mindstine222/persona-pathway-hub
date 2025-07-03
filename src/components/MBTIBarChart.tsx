@@ -74,6 +74,10 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
           const dominantPercentage = Math.max(leftPercentage, rightPercentage);
           const dominantLabel = dominantSide === 'left' ? dim.leftLabel : dim.rightLabel;
           
+          // Calculate the position of the center indicator
+          // Position should be based on the left percentage from 0 to 100
+          const indicatorPosition = leftPercentage;
+          
           return (
             <div key={index} className="space-y-4">
               {/* Category Header */}
@@ -126,10 +130,13 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
                   />
                 </div>
                 
-                {/* Center indicator - positioned based on actual percentage */}
+                {/* Center indicator - positioned based on left percentage */}
                 <div 
                   className="absolute top-1/2 transform -translate-y-1/2 transition-all duration-700 ease-out"
-                  style={{ left: `${leftPercentage}%`, transform: 'translateX(-50%) translateY(-50%)' }}
+                  style={{ 
+                    left: `${indicatorPosition}%`, 
+                    transform: 'translateX(-50%) translateY(-50%)'
+                  }}
                 >
                   <div className="w-5 h-5 bg-white dark:bg-gray-800 rounded-full border-2 border-gray-300 dark:border-gray-600 shadow-md flex items-center justify-center">
                     <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></div>
