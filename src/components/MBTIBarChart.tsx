@@ -74,8 +74,9 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
           const dominantPercentage = Math.max(leftPercentage, rightPercentage);
           const dominantLabel = dominantSide === 'left' ? dim.leftLabel : dim.rightLabel;
           
-          // Calculate the position of the center indicator
-          // Position should be based on the left percentage from 0 to 100
+          // Calculate the correct position of the center indicator
+          // If left side is dominant (>50%), indicator should be positioned towards left
+          // If right side is dominant (>50%), indicator should be positioned towards right
           const indicatorPosition = leftPercentage;
           
           return (
@@ -112,25 +113,27 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
               {/* Progress bar */}
               <div className="relative">
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                  {/* Left side bar */}
+                  {/* Left side bar - fills from left based on left percentage */}
                   <div 
-                    className="absolute left-0 top-0 h-full rounded-l-full transition-all duration-700 ease-out"
+                    className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
                     style={{ 
                       background: `linear-gradient(90deg, ${dim.color} 0%, ${dim.color}dd 100%)`,
-                      width: `${leftPercentage}%`
+                      width: `${leftPercentage}%`,
+                      borderRadius: leftPercentage > 50 ? '9999px' : '9999px 0 0 9999px'
                     }}
                   />
-                  {/* Right side bar */}
+                  {/* Right side bar - fills from right based on right percentage */}
                   <div 
-                    className="absolute right-0 top-0 h-full rounded-r-full transition-all duration-700 ease-out"
+                    className="absolute right-0 top-0 h-full transition-all duration-700 ease-out"
                     style={{ 
                       background: `linear-gradient(270deg, ${dim.color} 0%, ${dim.color}dd 100%)`,
-                      width: `${rightPercentage}%`
+                      width: `${rightPercentage}%`,
+                      borderRadius: rightPercentage > 50 ? '9999px' : '0 9999px 9999px 0'
                     }}
                   />
                 </div>
                 
-                {/* Center indicator - positioned based on left percentage */}
+                {/* Center indicator - positioned correctly based on dominant side */}
                 <div 
                   className="absolute top-1/2 transform -translate-y-1/2 transition-all duration-700 ease-out"
                   style={{ 
@@ -139,7 +142,12 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
                   }}
                 >
                   <div className="w-5 h-5 bg-white dark:bg-gray-800 rounded-full border-2 border-gray-300 dark:border-gray-600 shadow-md flex items-center justify-center">
-                    <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></div>
+                    <div 
+                      className="w-2 h-2 rounded-full"
+                      style={{ 
+                        backgroundColor: dominantSide === 'left' ? dim.color : dim.color
+                      }}
+                    ></div>
                   </div>
                 </div>
               </div>

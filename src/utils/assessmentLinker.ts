@@ -49,7 +49,7 @@ export const linkAssessmentsToUser = async (userId: string, userEmail: string) =
   }
 };
 
-// New function to get all assessments for a user (both linked and email-matched)
+// Enhanced function to get all assessments for a user
 export const getAllUserAssessments = async (userId: string, userEmail: string) => {
   try {
     console.log('Fetching all assessments for user:', userId, userEmail);
@@ -60,11 +60,11 @@ export const getAllUserAssessments = async (userId: string, userEmail: string) =
       console.log(`Linked ${linkedCount} previous assessments to user account`);
     }
     
-    // Then fetch all assessments for this user (by user_id OR by email)
+    // Then fetch all assessments for this user - both by user_id AND by email
     const { data: assessments, error } = await supabase
       .from('assessments')
       .select('*')
-      .or(`user_id.eq.${userId},and(email.eq.${userEmail},user_id.is.null)`)
+      .or(`user_id.eq.${userId},email.eq.${userEmail}`)
       .order('completed_at', { ascending: false });
 
     if (error) {
@@ -72,12 +72,12 @@ export const getAllUserAssessments = async (userId: string, userEmail: string) =
       return [];
     }
 
-    // Remove any duplicates (same email + similar timestamp)
+    // Remove any duplicates (same email + same mbti_type + similar timestamp)
     const uniqueAssessments = assessments?.filter((assessment, index, arr) => {
       const isDuplicate = arr.findIndex(other => 
         other.email === assessment.email && 
         other.mbti_type === assessment.mbti_type &&
-        Math.abs(new Date(other.completed_at).getTime() - new Date(assessment.completed_at).getTime()) < 60000 // within 1 minute
+        Math.abs(new Date(other.completed_at).getTime() - new Date(assessment.completed_at).getTime()) < 30000 // within 30 seconds
       ) < index;
       return !isDuplicate;
     }) || [];
@@ -87,5 +87,32 @@ export const getAllUserAssessments = async (userId: string, userEmail: string) =
   } catch (error) {
     console.error('Error in getAllUserAssessments:', error);
     return [];
+  }
+};
+
+// Function to force link assessments when user logs in
+export const forceReLinkAssessments = async (userId: string, userEmail: string) => {
+  try {
+    console.log('Force re-linking assessments for user after login:', userId, userEmail);
+    
+    // Update ALL assessments with this email to be linked to this user
+    const { data: updatedAssessments, error: updateError } = await supabase
+      .from('assessments')
+      .update({ user_id: userId })
+      .eq('email', userEmail)
+      .select();
+
+    if (updateError) {
+      console.error('Error force linking assessments:', updateError);
+      return 0;
+    }
+
+    const linkedCount = updatedAssessments?.length || 0;
+    console.log(`Force linked ${linkedCount} assessments to user account`);
+    
+    return linkedCount;
+  } catch (error) {
+    console.error('Error in forceReLinkAssessments:', error);
+    return 0;
   }
 };

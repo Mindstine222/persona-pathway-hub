@@ -9,7 +9,8 @@ import Navigation from "@/components/Navigation";
 import AssessmentResults from "@/components/AssessmentResults";
 import EditProfile from "@/components/EditProfile";
 import { ArrowRight, RotateCcw, Download, Calendar, User as UserIcon, Eye, Settings } from "lucide-react";
-import { getAllUserAssessments } from "@/utils/assessmentLinker";
+import { getAllUserAssessments, forceReLinkAssessments } from "@/utils/assessmentLinker";
+import { useToast } from "@/hooks/use-toast";
 
 interface AssessmentHistory {
   id: string;
@@ -29,6 +30,23 @@ const Dashboard = () => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [hasCurrentAssessment, setHasCurrentAssessment] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const fetchAssessments = async (userId: string, userEmail: string) => {
+    // Force relink all assessments first
+    const linkedCount = await forceReLinkAssessments(userId, userEmail);
+    if (linkedCount > 0) {
+      toast({
+        title: "Assessments Linked",
+        description: `${linkedCount} previous assessment${linkedCount !== 1 ? 's' : ''} have been linked to your account.`,
+      });
+    }
+    
+    // Then get all assessments
+    const assessments = await getAllUserAssessments(userId, userEmail);
+    setAssessmentHistory(assessments);
+    setHasCurrentAssessment(assessments.length > 0);
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,9 +61,7 @@ const Dashboard = () => {
       console.log('Current user:', session.user);
       
       if (session.user?.email) {
-        const assessments = await getAllUserAssessments(session.user.id, session.user.email);
-        setAssessmentHistory(assessments);
-        setHasCurrentAssessment(assessments.length > 0);
+        await fetchAssessments(session.user.id, session.user.email);
       }
       
       setIsLoading(false);
@@ -61,16 +77,14 @@ const Dashboard = () => {
           setUser(session.user);
           // Re-fetch assessments when user auth state changes
           if (session.user?.email) {
-            const assessments = await getAllUserAssessments(session.user.id, session.user.email);
-            setAssessmentHistory(assessments);
-            setHasCurrentAssessment(assessments.length > 0);
+            await fetchAssessments(session.user.id, session.user.email);
           }
         }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleTakeAssessment = () => {
     navigate("/assessment");
