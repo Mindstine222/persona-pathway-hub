@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,9 +60,20 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
         if (error) {
           console.error('Error saving assessment:', error);
+          toast({
+            title: "Warning",
+            description: "Assessment completed but couldn't be saved. Your results are still available via email.",
+            variant: "destructive",
+          });
         } else {
           setAssessmentSaved(true);
           console.log('Assessment saved successfully:', data);
+          
+          // Show success message
+          toast({
+            title: "Assessment Saved",
+            description: currentUser ? "Your assessment has been saved to your account." : "Assessment saved. It will be linked to your account when you log in.",
+          });
         }
       } catch (error) {
         console.error('Error saving assessment:', error);
@@ -73,7 +83,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
     if (responses && responses.length > 0) {
       saveAssessment();
     }
-  }, [responses, assessmentSaved, currentUser, email]);
+  }, [responses, assessmentSaved, currentUser, email, toast]);
 
   const handleSendReport = async () => {
     if (!email) {
@@ -171,16 +181,27 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
       if (emailError) {
         console.error('Email function error:', emailError);
-        throw new Error('Failed to send email. Please check if RESEND_API_KEY is configured');
+        throw new Error('Failed to send email. Please try again later.');
       }
 
-      // Update the assessment record to mark results as sent
+      // Update the assessment record to mark results as sent (if user is logged in)
       if (currentUser?.id) {
         await supabase
           .from('assessments')
           .update({ results_sent: true })
           .eq('user_id', currentUser.id)
           .eq('mbti_type', result.type)
+          .order('completed_at', { ascending: false })
+          .limit(1);
+      } else if (email) {
+        // For non-logged in users, update by email and timestamp
+        const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+        await supabase
+          .from('assessments')
+          .update({ results_sent: true })
+          .eq('email', email)
+          .eq('mbti_type', result.type)
+          .gte('completed_at', twentyMinutesAgo)
           .order('completed_at', { ascending: false })
           .limit(1);
       }
@@ -230,7 +251,8 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
             <p className="text-amber-800 dark:text-amber-300 text-sm">
-              <strong>Note:</strong> Your assessment has been saved{currentUser ? ' to your account' : ''}. Enter your email below to receive your detailed results report.
+              <strong>Note:</strong> Your assessment has been saved{currentUser ? ' to your account' : ' and will be linked to your account when you sign up or log in with this email'}. 
+              {!currentUser && ' All assessments taken with your email address will appear in your dashboard history after registration.'}
             </p>
           </div>
 
@@ -266,6 +288,11 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
               <p className="text-green-700 dark:text-green-400 text-sm mt-1">
                 Please check your inbox (and spam folder) for your detailed personality report.
               </p>
+              {!currentUser && (
+                <p className="text-green-700 dark:text-green-400 text-sm mt-2">
+                  💡 <strong>Tip:</strong> Sign up or log in with this email to access all your assessment history anytime!
+                </p>
+              )}
             </div>
           )}
 

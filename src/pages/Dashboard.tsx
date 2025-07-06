@@ -9,7 +9,7 @@ import Navigation from "@/components/Navigation";
 import AssessmentResults from "@/components/AssessmentResults";
 import EditProfile from "@/components/EditProfile";
 import { ArrowRight, RotateCcw, Download, Calendar, User as UserIcon, Eye, Settings } from "lucide-react";
-import { linkAssessmentsToUser } from "@/utils/assessmentLinker";
+import { getAllUserAssessments } from "@/utils/assessmentLinker";
 
 interface AssessmentHistory {
   id: string;
@@ -30,36 +30,6 @@ const Dashboard = () => {
   const [hasCurrentAssessment, setHasCurrentAssessment] = useState(false);
   const navigate = useNavigate();
 
-  const fetchAssessments = async (userId: string, userEmail: string) => {
-    try {
-      console.log('Fetching assessments for user:', userId, userEmail);
-      
-      // First, try to link any unlinked assessments
-      const linkedCount = await linkAssessmentsToUser(userId, userEmail);
-      if (linkedCount > 0) {
-        console.log(`Linked ${linkedCount} previous assessments to user account`);
-      }
-      
-      // Then fetch all assessments for this user
-      const { data: assessments, error } = await supabase
-        .from('assessments')
-        .select('*')
-        .eq('user_id', userId)
-        .order('completed_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching assessments:', error);
-        return [];
-      }
-
-      console.log('Final assessments:', assessments);
-      return assessments || [];
-    } catch (error) {
-      console.error('Error in fetchAssessments:', error);
-      return [];
-    }
-  };
-
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -73,7 +43,7 @@ const Dashboard = () => {
       console.log('Current user:', session.user);
       
       if (session.user?.email) {
-        const assessments = await fetchAssessments(session.user.id, session.user.email);
+        const assessments = await getAllUserAssessments(session.user.id, session.user.email);
         setAssessmentHistory(assessments);
         setHasCurrentAssessment(assessments.length > 0);
       }
@@ -91,7 +61,7 @@ const Dashboard = () => {
           setUser(session.user);
           // Re-fetch assessments when user auth state changes
           if (session.user?.email) {
-            const assessments = await fetchAssessments(session.user.id, session.user.email);
+            const assessments = await getAllUserAssessments(session.user.id, session.user.email);
             setAssessmentHistory(assessments);
             setHasCurrentAssessment(assessments.length > 0);
           }
@@ -217,7 +187,7 @@ const Dashboard = () => {
                     className="h-24 bg-blue-600 hover:bg-blue-700 text-white flex flex-col items-center justify-center gap-2"
                   >
                     <span className="text-2xl">📋</span>
-                    <span>{hasCurrentAssessment ? 'View Current Assessment' : 'Take New Assessment'}</span>
+                    <span>{hasCurrentAssessment ? 'Take New Assessment' : 'Take Assessment'}</span>
                   </Button>
                   <Button 
                     variant="outline"
@@ -236,8 +206,11 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                   <Calendar className="w-5 h-5" />
-                  Your Assessment History ({assessmentHistory.length})
+                  Complete Assessment History ({assessmentHistory.length})
                 </CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  All assessments taken with your email address, including those completed before registration
+                </p>
               </CardHeader>
               <CardContent>
                 {assessmentHistory.length === 0 ? (
@@ -269,9 +242,21 @@ const Dashboard = () => {
                               <p className="font-medium text-gray-900 dark:text-gray-100">
                                 INTRA16 Assessment
                               </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Completed on {new Date(assessment.completed_at).toLocaleDateString()}
-                              </p>
+                              <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <p>Completed: {new Date(assessment.completed_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long', 
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}</p>
+                                <p>Email: {assessment.email}</p>
+                                {!assessment.user_id && (
+                                  <p className="text-amber-600 dark:text-amber-400 text-xs">
+                                    📝 Taken before account creation
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -329,6 +314,12 @@ const Dashboard = () => {
                   <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Member since</label>
                   <p className="text-gray-900 dark:text-gray-100">
                     {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Recently'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Assessment History</label>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {assessmentHistory.length} assessment{assessmentHistory.length !== 1 ? 's' : ''} completed
                   </p>
                 </div>
                 <Button 
