@@ -33,44 +33,64 @@ const Dashboard = () => {
   const { toast } = useToast();
 
   const fetchAssessments = async (userId: string, userEmail: string) => {
-    // Force relink all assessments first
-    const linkedCount = await forceReLinkAssessments(userId, userEmail);
-    if (linkedCount > 0) {
+    try {
+      console.log('Fetching assessments for user:', userId, userEmail);
+      
+      // Force relink all assessments first
+      const linkedCount = await forceReLinkAssessments(userId, userEmail);
+      if (linkedCount > 0) {
+        toast({
+          title: "Assessments Linked",
+          description: `${linkedCount} previous assessment${linkedCount !== 1 ? 's' : ''} have been linked to your account.`,
+        });
+      }
+      
+      // Then get all assessments
+      const assessments = await getAllUserAssessments(userId, userEmail);
+      console.log('Retrieved assessments:', assessments.length);
+      
+      setAssessmentHistory(assessments);
+      setHasCurrentAssessment(assessments.length > 0);
+    } catch (error) {
+      console.error('Error fetching assessments:', error);
       toast({
-        title: "Assessments Linked",
-        description: `${linkedCount} previous assessment${linkedCount !== 1 ? 's' : ''} have been linked to your account.`,
+        title: "Error",
+        description: "Failed to load assessment history. Please refresh the page.",
+        variant: "destructive",
       });
     }
-    
-    // Then get all assessments
-    const assessments = await getAllUserAssessments(userId, userEmail);
-    setAssessmentHistory(assessments);
-    setHasCurrentAssessment(assessments.length > 0);
   };
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          navigate("/auth");
+          return;
+        }
 
-      setUser(session.user);
-      console.log('Current user:', session.user);
-      
-      if (session.user?.email) {
-        await fetchAssessments(session.user.id, session.user.email);
+        setUser(session.user);
+        console.log('Current user:', session.user.email);
+        
+        if (session.user?.email) {
+          await fetchAssessments(session.user.id, session.user.email);
+        }
+      } catch (error) {
+        console.error('Error in checkAuth:', error);
+        navigate("/auth");
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     };
 
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change in Dashboard:', event);
+        
         if (!session) {
           navigate("/auth");
         } else {
@@ -245,8 +265,8 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {assessmentHistory.map((assessment) => (
-                      <div key={assessment.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    {assessmentHistory.map((assessment, index) => (
+                      <div key={`${assessment.id}-${index}`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
                             <Badge className="text-lg px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800">

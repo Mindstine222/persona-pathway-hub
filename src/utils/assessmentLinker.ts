@@ -90,24 +90,25 @@ export const getAllUserAssessments = async (userId: string, userEmail: string) =
   }
 };
 
-// Function to force link assessments when user logs in
+// Fixed function to force link assessments when user logs in
 export const forceReLinkAssessments = async (userId: string, userEmail: string) => {
   try {
     console.log('Force re-linking assessments for user after login:', userId, userEmail);
     
     // Update ALL assessments with this email to be linked to this user
-    const { data: updatedAssessments, error: updateError } = await supabase
+    // Don't try to select fields that don't exist in the table
+    const { error: updateError, count } = await supabase
       .from('assessments')
       .update({ user_id: userId })
       .eq('email', userEmail)
-      .select();
+      .is('user_id', null); // Only update assessments that don't have a user_id yet
 
     if (updateError) {
       console.error('Error force linking assessments:', updateError);
       return 0;
     }
 
-    const linkedCount = updatedAssessments?.length || 0;
+    const linkedCount = count || 0;
     console.log(`Force linked ${linkedCount} assessments to user account`);
     
     return linkedCount;

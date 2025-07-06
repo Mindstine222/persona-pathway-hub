@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -9,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -21,7 +23,13 @@ const Navigation = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setUser(session?.user ?? null);
+        
+        if (event === 'SIGNED_OUT') {
+          setIsSigningOut(false);
+          console.log('User signed out successfully');
+        }
       }
     );
 
@@ -29,8 +37,14 @@ const Navigation = () => {
   }, []);
 
   const handleSignOut = async () => {
+    if (isSigningOut) return; // Prevent multiple sign out attempts
+    
     try {
+      setIsSigningOut(true);
+      console.log('Attempting to sign out user:', user?.email);
+      
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
         console.error('Sign out error:', error);
         toast({
@@ -38,7 +52,10 @@ const Navigation = () => {
           description: "Failed to sign out. Please try again.",
           variant: "destructive",
         });
+        setIsSigningOut(false);
       } else {
+        // Clear user state immediately
+        setUser(null);
         toast({
           title: "Signed out",
           description: "You have been successfully signed out.",
@@ -52,6 +69,7 @@ const Navigation = () => {
         description: "Failed to sign out. Please try again.",
         variant: "destructive",
       });
+      setIsSigningOut(false);
     }
   };
 
@@ -89,8 +107,13 @@ const Navigation = () => {
             {user ? (
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600">Welcome, {user.user_metadata?.first_name || user.email}</span>
-                <Button variant="ghost" onClick={handleSignOut} className="text-gray-600 hover:text-blue-600">
-                  Sign Out
+                <Button 
+                  variant="ghost" 
+                  onClick={handleSignOut} 
+                  className="text-gray-600 hover:text-blue-600"
+                  disabled={isSigningOut}
+                >
+                  {isSigningOut ? "Signing out..." : "Sign Out"}
                 </Button>
               </div>
             ) : (
@@ -135,8 +158,13 @@ const Navigation = () => {
               {user ? (
                 <div className="flex flex-col gap-2 pt-4">
                   <span className="text-sm text-gray-600">Welcome, {user.user_metadata?.first_name || user.email}</span>
-                  <Button variant="ghost" onClick={handleSignOut} className="justify-start text-gray-600 hover:text-blue-600">
-                    Sign Out
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleSignOut} 
+                    className="justify-start text-gray-600 hover:text-blue-600"
+                    disabled={isSigningOut}
+                  >
+                    {isSigningOut ? "Signing out..." : "Sign Out"}
                   </Button>
                 </div>
               ) : (
