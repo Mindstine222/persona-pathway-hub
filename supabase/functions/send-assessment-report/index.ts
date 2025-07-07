@@ -22,7 +22,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, name, mbtiType, reportUrl }: AssessmentReportRequest = await req.json();
+    let { email, name, mbtiType, reportUrl }: AssessmentReportRequest = await req.json();
+          email = email?.trim().toLowerCase(); // ✅ Normalize here
+
 
     console.log('Assessment report request:', { email, name, mbtiType, reportUrl });
 
