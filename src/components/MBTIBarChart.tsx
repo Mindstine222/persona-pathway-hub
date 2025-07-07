@@ -77,7 +77,10 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
           // Calculate the correct position of the center indicator
           // If left side is dominant (>50%), indicator should be positioned towards left
           // If right side is dominant (>50%), indicator should be positioned towards right
-          const indicatorPosition = leftPercentage;
+          const indicatorPosition = dominantSide === 'left' 
+          ? leftPercentage 
+          : 100 - rightPercentage;
+
           
           return (
             <div key={index} className="space-y-4">
