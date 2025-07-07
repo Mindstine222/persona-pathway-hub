@@ -27,6 +27,8 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    const normalizedEmail = email.trim().toLowerCase(); // ✅ normalize once
+    
     try {
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({
