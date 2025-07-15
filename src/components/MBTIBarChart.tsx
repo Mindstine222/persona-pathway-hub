@@ -1,4 +1,3 @@
-
 import React from "react";
 
 interface MBTIBarChartProps {
@@ -19,29 +18,29 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
     {
       name: "Energy Direction",
       leftLabel: "Extraverted",
-      rightLabel: "Introverted", 
+      rightLabel: "Introverted",
       leftScore: scores.E,
       rightScore: scores.I,
       color: "#3B82F6", // Blue
-      icon: "⚡"
+      icon: "⚡",
     },
     {
       name: "Information Processing",
-      leftLabel: "Intuitive", 
+      leftLabel: "Intuitive",
       rightLabel: "Observant",
       leftScore: scores.N,
       rightScore: scores.S,
       color: "#F59E0B", // Amber/Orange
-      icon: "👁️"
+      icon: "👁️",
     },
     {
       name: "Decision Making",
       leftLabel: "Thinking",
-      rightLabel: "Feeling", 
+      rightLabel: "Feeling",
       leftScore: scores.T,
       rightScore: scores.F,
       color: "#10B981", // Green
-      icon: "🧠"
+      icon: "🧠",
     },
     {
       name: "Lifestyle Approach",
@@ -50,8 +49,8 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
       leftScore: scores.J,
       rightScore: scores.P,
       color: "#8B5CF6", // Purple
-      icon: "📋"
-    }
+      icon: "📋",
+    },
   ];
 
   return (
@@ -64,24 +63,23 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
           Your Personality Preference Chart
         </h3>
       </div>
-      
+
       <div className="space-y-8">
         {dimensions.map((dim, index) => {
           const total = dim.leftScore + dim.rightScore;
           const leftPercentage = Math.round((dim.leftScore / total) * 100);
           const rightPercentage = 100 - leftPercentage;
-          const dominantSide = leftPercentage > rightPercentage ? 'left' : 'right';
+          const dominantSide = leftPercentage >= rightPercentage ? "left" : "right";
+          const dominantScore = dominantSide === "left" ? dim.leftScore : dim.rightScore;
           const dominantPercentage = Math.max(leftPercentage, rightPercentage);
-          const dominantLabel = dominantSide === 'left' ? dim.leftLabel : dim.rightLabel;
-          
-          // Calculate the correct position of the center indicator
-          // If left side is dominant (>50%), indicator should be positioned towards left
-          // If right side is dominant (>50%), indicator should be positioned towards right
-          const indicatorPosition = dominantSide === 'left' 
-          ? leftPercentage 
-          : 100 - rightPercentage;
+          const dominantLabel = dominantSide === "left" ? dim.leftLabel : dim.rightLabel;
 
-          
+          // Indicator: center is 50%; offset from center based on dominance
+          const indicatorPosition =
+            dominantSide === "left"
+              ? 50 - (dominantPercentage - 50)
+              : 50 + (dominantPercentage - 50);
+
           return (
             <div key={index} className="space-y-4">
               {/* Category Header */}
@@ -96,7 +94,7 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
                   </p>
                 </div>
               </div>
-              
+
               {/* Labels with percentages */}
               <div className="flex justify-between items-center text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
                 <div className="flex items-center gap-2">
@@ -112,52 +110,60 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
                   <span>{dim.rightLabel}</span>
                 </div>
               </div>
-              
+
               {/* Progress bar */}
               <div className="relative">
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                  {/* Left side bar - fills from left based on left percentage */}
-                  <div 
-                    className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
-                    style={{ 
-                      background: `linear-gradient(90deg, ${dim.color} 0%, ${dim.color}dd 100%)`,
-                      width: `${leftPercentage}%`,
-                      borderRadius: leftPercentage > 50 ? '9999px' : '9999px 0 0 9999px'
+                  {/* Left bar */}
+                  <div
+                    className="absolute left-1/2 top-0 h-full transition-all duration-700 ease-out origin-right"
+                    style={{
+                      background: `linear-gradient(270deg, ${dim.color} 0%, ${dim.color}dd 100%)`,
+                      width: `${leftPercentage / 2}%`,
+                      borderRadius: "9999px 0 0 9999px",
+                      transform: "translateX(-100%)",
                     }}
                   />
-                  {/* Right side bar - fills from right based on right percentage */}
-                  <div 
-                    className="absolute right-0 top-0 h-full transition-all duration-700 ease-out"
-                    style={{ 
-                      background: `linear-gradient(270deg, ${dim.color} 0%, ${dim.color}dd 100%)`,
-                      width: `${rightPercentage}%`,
-                      borderRadius: rightPercentage > 50 ? '9999px' : '0 9999px 9999px 0'
+                  {/* Right bar */}
+                  <div
+                    className="absolute left-1/2 top-0 h-full transition-all duration-700 ease-out origin-left"
+                    style={{
+                      background: `linear-gradient(90deg, ${dim.color} 0%, ${dim.color}dd 100%)`,
+                      width: `${rightPercentage / 2}%`,
+                      borderRadius: "0 9999px 9999px 0",
                     }}
                   />
                 </div>
-                
-                {/* Center indicator - positioned correctly based on dominant side */}
-                <div 
-                  className="absolute top-1/2 transform -translate-y-1/2 transition-all duration-700 ease-out"
-                  style={{ 
-                    left: `${indicatorPosition}%`, 
-                    transform: 'translateX(-50%) translateY(-50%)'
+
+                {/* Center line */}
+                <div className="absolute top-0 left-1/2 h-full w-0.5 bg-gray-400/30 dark:bg-gray-500/30 z-0" />
+
+                {/* Indicator */}
+                <div
+                  className="absolute top-1/2 transform -translate-y-1/2 transition-all duration-700 ease-out z-10"
+                  style={{
+                    left: `${indicatorPosition}%`,
+                    transform: "translateX(-50%) translateY(-50%)",
                   }}
                 >
                   <div className="w-5 h-5 bg-white dark:bg-gray-800 rounded-full border-2 border-gray-300 dark:border-gray-600 shadow-md flex items-center justify-center">
-                    <div 
+                    <div
                       className="w-2 h-2 rounded-full"
-                      style={{ 
-                        backgroundColor: dominantSide === 'left' ? dim.color : dim.color
+                      style={{
+                        backgroundColor: dim.color,
                       }}
                     ></div>
                   </div>
                 </div>
               </div>
-              
+
+              <p className="text-center text-xs mt-1 text-gray-500 dark:text-gray-400">
+                Dominant: {dominantLabel} ({dominantPercentage}%)
+              </p>
+
               {/* Percentage indicators */}
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
-                <span>0%</span>
+                <span>100%</span>
                 <span>50%</span>
                 <span>100%</span>
               </div>
@@ -165,19 +171,22 @@ const MBTIBarChart = ({ scores }: MBTIBarChartProps) => {
           );
         })}
       </div>
-      
+
       {/* Test date and metadata */}
       <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-2">
             <span className="text-blue-500">📅</span>
-            <span>Assessment completed: {new Date().toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'short', 
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}</span>
+            <span>
+              Assessment completed:{" "}
+              {new Date().toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
           </div>
           <button className="text-blue-500 hover:text-blue-600 font-medium transition-colors">
             View Detailed Analysis →
