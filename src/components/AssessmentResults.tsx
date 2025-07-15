@@ -1,9 +1,12 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calculateMBTIType } from "@/utils/mbtiCalculator";
 import { mbtiTypes } from "@/data/mbtiTypes";
 import MBTIBarChart from "@/components/MBTIBarChart";
+import { useAIInsights } from "@/hooks/useAIInsights";
+import { Loader2 } from "lucide-react";
 
 interface AssessmentResultsProps {
   responses: number[];
@@ -13,139 +16,45 @@ interface AssessmentResultsProps {
 const AssessmentResults = ({ responses, onRetakeTest }: AssessmentResultsProps) => {
   const result = calculateMBTIType(responses);
   const typeInfo = mbtiTypes[result.type];
+  
+  const { insights, loading, error } = useAIInsights(result.type, result.scores, responses);
 
-  // Generate dynamic insights based on actual scores
-  const generatePersonalizedInsights = () => {
-    const insights = [];
-    const type = result.type;
-    const scores = result.scores;
-
-    // Energy Direction Insights
-    const energyGap = Math.abs(scores.E - scores.I);
-    if (type[0] === 'E') {
-      if (energyGap > 30) {
-        insights.push({
-          title: "Strong Extraversion",
-          content: "You have a very clear preference for Extraversion. You likely feel most energized when interacting with others and may find isolation draining. Consider leveraging your natural networking abilities and collaborative spirit in your work."
-        });
-      } else if (energyGap > 15) {
-        insights.push({
-          title: "Moderate Extraversion",
-          content: "While you prefer Extraversion, you also have some comfort with Introversion. This flexibility allows you to adapt to both social and solitary work situations effectively."
-        });
-      } else {
-        insights.push({
-          title: "Flexible Energy Direction",
-          content: "Your energy preference is quite balanced. You can draw energy from both social interaction and quiet reflection, making you adaptable to various work environments."
-        });
-      }
-    } else {
-      if (energyGap > 30) {
-        insights.push({
-          title: "Strong Introversion",
-          content: "You have a clear preference for Introversion. You likely do your best thinking in quiet environments and may need time alone to recharge after social interactions. Your depth of focus is a significant strength."
-        });
-      } else if (energyGap > 15) {
-        insights.push({
-          title: "Moderate Introversion",
-          content: "While you prefer Introversion, you can also engage effectively in social situations. This balance allows you to contribute thoughtfully in groups while maintaining your need for reflection."
-        });
-      } else {
-        insights.push({
-          title: "Flexible Energy Direction",
-          content: "Your energy preference is quite balanced. You can draw energy from both quiet reflection and social interaction, giving you versatility in different situations."
-        });
-      }
-    }
-
-    // Information Processing Insights
-    const infoGap = Math.abs(scores.S - scores.N);
-    if (type[1] === 'S') {
-      if (infoGap > 30) {
-        insights.push({
-          title: "Strong Sensing Preference",
-          content: "You have a clear preference for concrete, practical information. You excel at noticing details and working with real, tangible data. Your practical approach helps you implement ideas effectively."
-        });
-      } else {
-        insights.push({
-          title: "Balanced Information Processing",
-          content: "While you lean toward Sensing, you can also appreciate abstract concepts and future possibilities. This gives you both practical grounding and innovative potential."
-        });
-      }
-    } else {
-      if (infoGap > 30) {
-        insights.push({
-          title: "Strong Intuitive Preference",
-          content: "You have a clear preference for patterns, possibilities, and future potential. You excel at seeing the big picture and generating innovative ideas. Your visionary thinking is a key strength."
-        });
-      } else {
-        insights.push({
-          title: "Balanced Information Processing",
-          content: "While you lean toward Intuition, you can also work effectively with concrete details when needed. This balance helps you both innovate and implement."
-        });
-      }
-    }
-
-    // Decision Making Insights
-    const decisionGap = Math.abs(scores.T - scores.F);
-    if (type[2] === 'T') {
-      if (decisionGap > 30) {
-        insights.push({
-          title: "Strong Thinking Preference",
-          content: "You have a clear preference for logical, objective decision-making. You excel at analyzing situations rationally and making tough decisions based on facts and principles."
-        });
-      } else {
-        insights.push({
-          title: "Balanced Decision Making",
-          content: "While you prefer logical analysis, you also consider the human impact of decisions. This balance helps you make decisions that are both rational and considerate."
-        });
-      }
-    } else {
-      if (decisionGap > 30) {
-        insights.push({
-          title: "Strong Feeling Preference",
-          content: "You have a clear preference for value-based, people-centered decision-making. You excel at considering the human impact and maintaining harmony while making decisions."
-        });
-      } else {
-        insights.push({
-          title: "Balanced Decision Making",
-          content: "While you prefer considering values and people, you can also apply logical analysis when needed. This balance helps you make well-rounded decisions."
-        });
-      }
-    }
-
-    // Lifestyle Insights
-    const lifestyleGap = Math.abs(scores.J - scores.P);
-    if (type[3] === 'J') {
-      if (lifestyleGap > 30) {
-        insights.push({
-          title: "Strong Judging Preference",
-          content: "You have a clear preference for structure and closure. You excel at planning, organizing, and bringing projects to completion. Your reliability and follow-through are significant strengths."
-        });
-      } else {
-        insights.push({
-          title: "Balanced Lifestyle Approach",
-          content: "While you prefer structure, you can also adapt to changing circumstances. This flexibility allows you to plan effectively while remaining open to new opportunities."
-        });
-      }
-    } else {
-      if (lifestyleGap > 30) {
-        insights.push({
-          title: "Strong Perceiving Preference",
-          content: "You have a clear preference for flexibility and keeping options open. You excel at adapting to change and exploring new possibilities. Your spontaneity and adaptability are key strengths."
-        });
-      } else {
-        insights.push({
-          title: "Balanced Lifestyle Approach",
-          content: "While you prefer flexibility, you can also work within structured environments when needed. This balance helps you adapt while still meeting deadlines and commitments."
-        });
-      }
-    }
-
-    return insights;
+  // Fallback to static content if AI fails
+  const getFallbackInsights = () => {
+    return {
+      personalityDescription: typeInfo.description,
+      personalizedInsights: [
+        {
+          title: "Energy Direction",
+          content: result.scores.E > result.scores.I 
+            ? "You tend to draw energy from external interactions and social environments."
+            : "You prefer to recharge through quiet reflection and internal processing."
+        },
+        {
+          title: "Information Processing", 
+          content: result.scores.S > result.scores.N
+            ? "You focus on concrete details and practical, real-world information."
+            : "You're drawn to patterns, possibilities, and abstract concepts."
+        },
+        {
+          title: "Decision Making",
+          content: result.scores.T > result.scores.F
+            ? "You prefer logical, objective analysis when making decisions."
+            : "You consider values and the human impact when making choices."
+        },
+        {
+          title: "Lifestyle Approach",
+          content: result.scores.J > result.scores.P
+            ? "You appreciate structure, planning, and bringing things to completion."
+            : "You value flexibility, spontaneity, and keeping options open."
+        }
+      ],
+      strengths: typeInfo.strengths,
+      careers: typeInfo.careers
+    };
   };
 
-  const personalizedInsights = generatePersonalizedInsights();
+  const displayInsights = insights || getFallbackInsights();
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 p-4">
@@ -167,7 +76,27 @@ const AssessmentResults = ({ responses, onRetakeTest }: AssessmentResultsProps) 
                 </Badge>
               </div>
               <CardTitle className="text-2xl text-gray-900 dark:text-gray-100">{typeInfo.name}</CardTitle>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">{typeInfo.description}</p>
+              
+              {loading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                  <span className="ml-2 text-gray-600 dark:text-gray-400">Generating your personalized insights...</span>
+                </div>
+              ) : error ? (
+                <div className="text-center py-4">
+                  <p className="text-amber-600 dark:text-amber-400 text-sm mb-2">
+                    ⚠️ Using standard insights (AI generation failed)
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">{displayInsights.personalityDescription}</p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="inline-flex items-center gap-2 mb-2">
+                    <span className="text-green-600 dark:text-green-400 text-sm">✨ AI-Personalized</span>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2">{displayInsights.personalityDescription}</p>
+                </div>
+              )}
             </CardHeader>
           </Card>
 
@@ -202,11 +131,16 @@ const AssessmentResults = ({ responses, onRetakeTest }: AssessmentResultsProps) 
           <CardHeader>
             <CardTitle className="text-2xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <span>💡</span> Your Personalized Insights
+              {insights && !loading && (
+                <Badge variant="outline" className="ml-2 text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
+                  AI-Generated
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-6">
-              {personalizedInsights.map((insight, index) => (
+              {displayInsights.personalizedInsights.map((insight, index) => (
                 <div key={index} className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border-l-4 border-blue-500">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">{insight.title}</h4>
                   <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{insight.content}</p>
@@ -222,11 +156,16 @@ const AssessmentResults = ({ responses, onRetakeTest }: AssessmentResultsProps) 
             <CardHeader>
               <CardTitle className="text-xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <span>💪</span> Key Strengths
+                {insights && !loading && (
+                  <Badge variant="outline" className="ml-2 text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
+                    Personalized
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {typeInfo.strengths.map((strength, index) => (
+                {displayInsights.strengths.map((strength, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-gray-700 dark:text-gray-300">{strength}</span>
@@ -240,11 +179,16 @@ const AssessmentResults = ({ responses, onRetakeTest }: AssessmentResultsProps) 
             <CardHeader>
               <CardTitle className="text-xl text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <span>🚀</span> Career Suggestions
+                {insights && !loading && (
+                  <Badge variant="outline" className="ml-2 text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800">
+                    Tailored
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {typeInfo.careers.map((career, index) => (
+                {displayInsights.careers.map((career, index) => (
                   <Badge key={index} variant="outline" className="text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600">
                     {career}
                   </Badge>
