@@ -1,25 +1,23 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { mbtiType, scores, responses } = await req.json();
-    
-    console.log('Generating insights for:', { mbtiType, scores });
 
-    // Create a detailed prompt for personalized insights
+    console.log("Generating insights for:", { mbtiType, scores });
+
     const prompt = `
 You are an expert MBTI analyst. Generate a comprehensive, personalized MBTI analysis for someone with type ${mbtiType} and the following preference scores:
 
@@ -51,60 +49,80 @@ Ensure the content is:
 Return only valid JSON, no additional text.
 `;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are an expert MBTI analyst who creates personalized, unique insights. Always respond with valid JSON only.' 
-          },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.8,
-        max_tokens: 1500,
-      }),
-    });
+    const maxRetries = 3;
+    let delay = 1000;
+    let generatedContent = null;
+    let response;
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openAIApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert MBTI analyst who creates personalized, unique insights. Always respond with valid JSON only.",
+            },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.8,
+          max_tokens: 1500,
+        }),
+      });
+
+      if (response.status === 429) {
+        console.warn(`Rate limit hit (429). Retrying in ${delay}ms... [Attempt ${attempt}]`);
+        await new Promise((res) => setTimeout(res, delay));
+        delay *= 2;
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      generatedContent = data.choices[0].message.content;
+      break;
     }
 
-    const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
-    
-    console.log('Generated content:', generatedContent);
-    
-    // Parse the JSON response
+    if (!generatedContent) {
+      throw new Error("Failed to get a response from OpenAI after multiple retries.");
+    }
+
+    console.log("Generated content:", generatedContent);
+
     let insights;
     try {
       insights = JSON.parse(generatedContent);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      throw new Error('Failed to parse AI-generated content');
+      console.error("Failed to parse AI response:", parseError);
+      throw new Error("Failed to parse AI-generated content");
     }
 
-    // Validate the response structure
     if (!insights.personalityDescription || !insights.personalizedInsights || !insights.strengths || !insights.careers) {
-      throw new Error('Invalid AI response structure');
+      throw new Error("Invalid AI response structure");
     }
 
     return new Response(JSON.stringify(insights), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error('Error in generate-mbti-insights function:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      fallback: true 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error("Error in generate-mbti-insights function:", error);
+    return new Response(
+      JSON.stringify({
+        error: error.message,
+        fallback: true,
+      }),
+      {
+        status: error.message?.includes("429") ? 429 : 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });
