@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
   const [emailSent, setEmailSent] = useState(false);
   const [assessmentSaved, setAssessmentSaved] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [savingStatus, setSavingStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const { toast } = useToast();
 
   // Check if user is logged in and get their email
@@ -36,12 +38,18 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
   // Save assessment automatically when component mounts
   useEffect(() => {
     const saveAssessment = async () => {
-      if (assessmentSaved) return;
+      if (assessmentSaved || !responses || responses.length === 0) {
+        console.log('Assessment save skipped:', { assessmentSaved, responsesLength: responses?.length });
+        return;
+      }
+      
+      setSavingStatus('saving');
+      console.log('Starting assessment save process...');
       
       try {
         const result = calculateMBTIType(responses);
-        console.log('Saving assessment with result:', result);
-        console.log('Current user:', currentUser);
+        console.log('MBTI calculation result:', result);
+        console.log('Current user info:', currentUser);
         
         const assessmentData = {
           email: currentUser?.email || email || null,
@@ -52,6 +60,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
         };
 
         console.log('Assessment data to save:', assessmentData);
+        console.log('Attempting to insert into assessments table...');
         
         const { data, error } = await supabase
           .from('assessments')
@@ -59,15 +68,26 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           .select();
 
         if (error) {
-          console.error('Error saving assessment:', error);
+          console.error('Supabase insert error:', error);
+          console.error('Error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          
+          setSavingStatus('error');
           toast({
             title: "Warning",
             description: "Assessment completed but couldn't be saved. Your results are still available via email.",
             variant: "destructive",
           });
         } else {
+          console.log('Assessment saved successfully!');
+          console.log('Saved assessment data:', data);
+          
           setAssessmentSaved(true);
-          console.log('Assessment saved successfully:', data);
+          setSavingStatus('saved');
           
           // Show success message
           toast({
@@ -76,13 +96,22 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           });
         }
       } catch (error) {
-        console.error('Error saving assessment:', error);
+        console.error('Unexpected error during assessment save:', error);
+        setSavingStatus('error');
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred while saving your assessment.",
+          variant: "destructive",
+        });
       }
     };
 
-    if (responses && responses.length > 0) {
+    // Add a small delay to ensure all data is ready
+    const timer = setTimeout(() => {
       saveAssessment();
-    }
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, [responses, assessmentSaved, currentUser, email, toast]);
 
   const handleSendReport = async () => {
@@ -236,6 +265,37 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           <p className="text-lg text-gray-600 dark:text-gray-400">
             Congratulations! You've successfully completed the INTRA16 personality assessment.
           </p>
+          
+          {/* Assessment Save Status */}
+          <div className={`p-4 rounded-lg border ${
+            savingStatus === 'saving' ? 'bg-blue-50 border-blue-200 text-blue-800' :
+            savingStatus === 'saved' ? 'bg-green-50 border-green-200 text-green-800' :
+            savingStatus === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+            'bg-gray-50 border-gray-200 text-gray-800'
+          }`}>
+            <div className="flex items-center gap-2">
+              {savingStatus === 'saving' && (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm">Saving your assessment...</span>
+                </>
+              )}
+              {savingStatus === 'saved' && (
+                <>
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm">Assessment saved successfully!</span>
+                </>
+              )}
+              {savingStatus === 'error' && (
+                <>
+                  <span className="text-sm">⚠️ Assessment save failed - check console for details</span>
+                </>
+              )}
+              {savingStatus === 'idle' && (
+                <span className="text-sm">Preparing to save assessment...</span>
+              )}
+            </div>
+          </div>
           
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
             <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Your Comprehensive Report Includes:</h3>
