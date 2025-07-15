@@ -47,7 +47,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
         const result = calculateMBTIType(responses);
         
         const assessmentData = {
-          email: currentUser?.email || email || null,
+          email: (currentUser?.email || email || null)?.toLowerCase(),
           responses: responses,
           mbti_type: result.type,
           user_id: currentUser?.id || null,
