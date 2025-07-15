@@ -18,7 +18,6 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [assessmentSaved, setAssessmentSaved] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [savingStatus, setSavingStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const { toast } = useToast();
@@ -38,18 +37,14 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
   // Save assessment automatically when component mounts
   useEffect(() => {
     const saveAssessment = async () => {
-      if (assessmentSaved || !responses || responses.length === 0) {
-        console.log('Assessment save skipped:', { assessmentSaved, responsesLength: responses?.length });
+      if (!responses || responses.length === 0) {
         return;
       }
       
       setSavingStatus('saving');
-      console.log('Starting assessment save process...');
       
       try {
         const result = calculateMBTIType(responses);
-        console.log('MBTI calculation result:', result);
-        console.log('Current user info:', currentUser);
         
         const assessmentData = {
           email: currentUser?.email || email || null,
@@ -59,23 +54,13 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           results_sent: false
         };
 
-        console.log('Assessment data to save:', assessmentData);
-        console.log('Attempting to insert into assessments table...');
-        
         const { data, error } = await supabase
           .from('assessments')
           .insert([assessmentData])
           .select();
 
         if (error) {
-          console.error('Supabase insert error:', error);
-          console.error('Error details:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code
-          });
-          
+          console.error('Assessment save error:', error);
           setSavingStatus('error');
           toast({
             title: "Warning",
@@ -83,16 +68,10 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
             variant: "destructive",
           });
         } else {
-          console.log('Assessment saved successfully!');
-          console.log('Saved assessment data:', data);
-          
-          setAssessmentSaved(true);
           setSavingStatus('saved');
-          
-          // Show success message
           toast({
             title: "Assessment Saved",
-            description: currentUser ? "Your assessment has been saved to your account." : "Assessment saved. It will be linked to your account when you log in.",
+            description: currentUser ? "Your assessment has been saved to your account." : "Assessment saved successfully.",
           });
         }
       } catch (error) {
@@ -106,13 +85,12 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
       }
     };
 
-    // Add a small delay to ensure all data is ready
     const timer = setTimeout(() => {
       saveAssessment();
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [responses, assessmentSaved, currentUser, email, toast]);
+  }, [responses, currentUser, email, toast]);
 
   const handleSendReport = async () => {
     if (!email) {
@@ -126,16 +104,13 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
     setIsLoading(true);
     try {
-      // Calculate result
       const result = calculateMBTIType(responses);
 
-      // Generate dynamic personalized insights based on actual scores
       const generatePersonalizedInsights = () => {
         const insights = [];
         const type = result.type;
         const scores = result.scores;
 
-        // Energy Direction Insights - based on actual E/I scores
         const energyGap = Math.abs(scores.E - scores.I);
         if (type[0] === 'E') {
           if (energyGap > 30) {
@@ -155,7 +130,6 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           }
         }
 
-        // Information Processing Insights - based on actual S/N scores
         const infoGap = Math.abs(scores.S - scores.N);
         if (type[1] === 'S') {
           if (infoGap > 25) {
@@ -171,7 +145,6 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           }
         }
 
-        // Decision Making Insights - based on actual T/F scores
         const decisionGap = Math.abs(scores.T - scores.F);
         if (type[2] === 'T') {
           if (decisionGap > 25) {
@@ -192,7 +165,6 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
 
       const insights = generatePersonalizedInsights();
 
-      // Prepare data in the format expected by the edge function
       const emailData = {
         email: email,
         name: email.split('@')[0],
@@ -201,9 +173,6 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
         insights: insights
       };
 
-      console.log('Sending email data:', emailData);
-
-      // Send email with results
       const { error: emailError } = await supabase.functions.invoke('send-assessment-report', {
         body: emailData
       });
@@ -213,7 +182,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
         throw new Error('Failed to send email. Please try again later.');
       }
 
-      // Update the assessment record to mark results as sent (if user is logged in)
+      // Update the assessment record to mark results as sent
       if (currentUser?.id) {
         await supabase
           .from('assessments')
@@ -223,7 +192,6 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
           .order('completed_at', { ascending: false })
           .limit(1);
       } else if (email) {
-        // For non-logged in users, update by email and timestamp
         const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
         await supabase
           .from('assessments')
@@ -288,7 +256,7 @@ const AssessmentCompletion = ({ responses, onRetakeTest }: AssessmentCompletionP
               )}
               {savingStatus === 'error' && (
                 <>
-                  <span className="text-sm">⚠️ Assessment save failed - check console for details</span>
+                  <span className="text-sm">⚠️ Assessment save failed - but you can still get your results via email</span>
                 </>
               )}
               {savingStatus === 'idle' && (
