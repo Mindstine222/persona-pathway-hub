@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -71,9 +72,20 @@ const Contact = () => {
     setIsLoading(true);
     
     try {
-      // Here you would typically send the form data to your backend
-      // For now, we'll just show a success message
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      // Save contact form submission to Supabase
+      const { error } = await supabase
+        .from('contact_submissions')
+        .insert([{
+          name: formData.name,
+          email: formData.email,
+          company: formData.company || null,
+          services: formData.services || null,
+          message: formData.message
+        }]);
+
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Message sent!",

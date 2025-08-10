@@ -119,7 +119,10 @@ const EditProfile = ({ user, onBack }: EditProfileProps) => {
         description: "Your profile has been successfully updated.",
       });
 
-      onBack();
+      // Small delay to ensure user sees the success message
+      setTimeout(() => {
+        onBack();
+      }, 1500);
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({

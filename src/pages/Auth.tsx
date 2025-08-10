@@ -32,7 +32,7 @@ const Auth = () => {
     try {
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email,
+          email: normalizedEmail,
           password,
         });
 
@@ -65,7 +65,7 @@ const Auth = () => {
           : 'https://duskydunes.com/dashboard';
         
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: normalizedEmail,
           password,
           options: {
             emailRedirectTo: redirectUrl,
